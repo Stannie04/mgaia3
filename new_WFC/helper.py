@@ -1,27 +1,56 @@
+import os
+from tqdm import tqdm
 from collections import defaultdict, Counter
 
 def load_map(filename):
     print(f"\nLoading map from: {filename}")
     with open(filename, "r") as f:
-        map_data = [list(line.strip()) for line in f]
+        map_data = [
+            [c if c in ['-', '.', 'X'] else '.' for c in line.strip()]
+            for line in f
+        ]
     print(f"Loaded map with dimensions: {len(map_data[0])}x{len(map_data)}\n")
-    return map_data
+    return [map_data]
 
 
-def extract_patterns(map_data, N):
-    print(f"Extracting {N}x{N} patterns from map...")
+def load_all_maps(folder_path):
+    print(f"\nLoading all maps from: {folder_path}")
+    maps = []
+    file_count = 0
+
+    for filename in os.listdir(folder_path):
+        if filename.endswith(".txt"):
+            file_path = os.path.join(folder_path, filename)
+            with open(file_path, 'r') as f:
+                lines = []
+                for line in f:
+                    sanitized_line = ''.join(c if c in ['-', '.', 'X'] else '.' for c in line.strip())
+                    lines.append(list(sanitized_line))
+                if lines: 
+                    maps.append(lines)
+                    file_count += 1
+
+    print(f"Loaded {file_count} maps\n")
+    return maps
+
+
+
+def extract_patterns(maps, N):
+    print(f"Extracting {N}x{N} patterns...")
     patterns = []
-    height, width = len(map_data), len(map_data[0])
     pattern_count = 0
 
-    for y in range(height - N + 1):
-        for x in range(width - N + 1):
-            pattern = tuple(tuple(map_data[y + dy][x + dx] for dx in range(N)) for dy in range(N))
-            patterns.append(pattern)
-            pattern_count += 1
+    for map_data in maps:
+        height, width = len(map_data), len(map_data[0])
+        for y in range(height - N + 1):
+            for x in range(width - N + 1):
+                pattern = tuple(tuple(map_data[y + dy][x + dx] for dx in range(N)) for dy in range(N))
+                patterns.append(pattern)
+                pattern_count += 1
 
-    print(f"Extracted {pattern_count} unique {N}x{N} patterns")
+    print(f"Extracted {pattern_count} total {N}x{N} patterns")
     return patterns
+
 
 
 def build_pattern_catalog(patterns):
@@ -38,7 +67,6 @@ def build_pattern_catalog(patterns):
 
 
 def pattern_match(p1, p2, direction):
-    directions = ["up", "right", "down", "left"]
     N = len(p1)
     if direction == 0:  # up
         return all(p1[0][i] == p2[-1][i] for i in range(N))
@@ -55,7 +83,7 @@ def build_adjacency_rules(catalog):
     adjacency = defaultdict(lambda: [set() for _ in range(4)])
     total_rules = 0
 
-    for i, a in enumerate(catalog):
+    for i, a in enumerate(tqdm(catalog, desc="Processing patterns")):
         for j, b in enumerate(catalog):
             for direction in range(4):
                 if pattern_match(a, b, direction):
@@ -63,7 +91,7 @@ def build_adjacency_rules(catalog):
                     total_rules += 1
 
     print(f"Generated {total_rules} adjacency rules for {len(catalog)} patterns")
-    print(f"Average rules per pattern: {total_rules/len(catalog):.1f}\n")
+    print(f"Average rules per pattern: {total_rules / len(catalog):.1f}\n")
     return adjacency
 
 

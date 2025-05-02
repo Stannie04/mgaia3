@@ -5,6 +5,7 @@ from WFC import OverlappingWFC
 from UI import UI
 from helper import (
     load_map,
+    load_all_maps,
     extract_patterns,
     build_pattern_catalog,
     build_adjacency_rules,
@@ -12,12 +13,19 @@ from helper import (
 )
 
 def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_window_size):
-    pygame.init()
     base_legend_fraction = 0.20
     min_legend_width = 150
 
     map_width = min(map_size[0], MAX_MAP_SIZE)
     map_height = min(map_size[1], MAX_MAP_SIZE)
+
+    patterns = extract_patterns(training_map, N)
+    catalog, weights = build_pattern_catalog(patterns)
+    adjacency = build_adjacency_rules(catalog)
+    wfc = OverlappingWFC(map_width, map_height, catalog, weights, adjacency)
+    output = wfc.render()
+
+    pygame.init()
     generating = True
     running = True
 
@@ -46,12 +54,6 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
 
         screen = pygame.display.set_mode((window_width, window_height))
         ui = UI(screen, grid_width, window_height, cell_size, legend_width, (map_width, map_height), N, MAX_MAP_SIZE)
-
-        patterns = extract_patterns(training_map, N)
-        catalog, weights = build_pattern_catalog(patterns)
-        adjacency = build_adjacency_rules(catalog)
-        wfc = OverlappingWFC(map_width, map_height, catalog, weights, adjacency)
-        output = wfc.render()
 
         colors = {
             '.': (255, 255, 255),
@@ -103,6 +105,7 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
     pygame.quit()
 
 
+
 def run_wfc(training_map, N, map_size):
     patterns = extract_patterns(training_map, N)
     catalog, weights = build_pattern_catalog(patterns)
@@ -122,6 +125,9 @@ if __name__ == "__main__":
 
     training_map_path = "training_maps/training_map_1.txt"
     training_map = load_map(training_map_path)
+
+    # training_maps_folder = "../data/all_txt_files"
+    # training_map = load_all_maps(training_maps_folder)
 
     N = 3
     MAX_MAP_SIZE = 80
