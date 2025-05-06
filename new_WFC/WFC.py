@@ -56,9 +56,10 @@ class OverlappingWFC:
 
     def render(self):
         output = [['?' for _ in range(self.width)] for _ in range(self.height)]
+        center = self.pattern_size // 2
         for y in range(self.height):
             for x in range(self.width):
                 if len(self.wave[y][x]) == 1:
                     pattern = self.catalog[next(iter(self.wave[y][x]))]
-                    output[y][x] = pattern[0][0]
+                    output[y][x] = pattern[center][center]
         return output

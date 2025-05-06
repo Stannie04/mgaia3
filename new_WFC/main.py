@@ -129,7 +129,7 @@ if __name__ == "__main__":
     # training_maps_folder = "../data/all_txt_files"
     # training_map = load_all_maps(training_maps_folder)
 
-    N = 3
+    N = 2
     MAX_MAP_SIZE = 80
     map_size = (30, 30)
     base_window_size = (900, 600)
