@@ -36,8 +36,10 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
         grid_height = map_height * cell_size
 
         screen = pygame.display.set_mode((grid_width + legend_width, grid_height))
-        ui = UI(screen, grid_width, grid_height, cell_size, legend_width, (map_width, map_height), N, MAX_MAP_SIZE)
-        colors = {'.': (255,255,255), 'X': (128,128,128), '-': (0,0,0), '?': (60,60,60)}
+        ui = UI(screen, grid_width, grid_height, cell_size, legend_width,
+                (map_width, map_height), N, MAX_MAP_SIZE)
+        colors = {'.': (255,255,255), 'X': (128,128,128),
+                  '-': (0,0,0), '?': (60,60,60)}
         clock = pygame.time.Clock()
 
         restart_ui = False
@@ -59,7 +61,7 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
                 if save:
                     save_output(output)
                 if do_repair:
-                    repair(output)
+                    repair(output, ui.repair_options)
 
             if generating:
                 if not wfc.run_step():

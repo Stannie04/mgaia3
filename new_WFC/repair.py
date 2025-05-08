@@ -1,12 +1,27 @@
-def repair(output):
+def repair(output, options=None):
     """
-    Apply a sequence of post-processing steps.
+    Apply a sequence of post-processing steps. 'options' is a dict mapping 
+    function names to booleans. If None, defaults to running all repairs.
     """
-    remove_small_rooms(output)
-    correct_edges(output)
-    seal_against_bounds(output)
-    prune_isolated_walls(output)
-    connect_rooms(output)
+    if options is None:
+        options = {
+            'remove_small_rooms': True,
+            'correct_edges': True,
+            'seal_against_bounds': True,
+            'prune_isolated_walls': True,
+            'connect_rooms': True
+        }
+
+    if options.get('remove_small_rooms', False):
+        remove_small_rooms(output)
+    if options.get('correct_edges', False):
+        correct_edges(output)
+    if options.get('seal_against_bounds', False):
+        seal_against_bounds(output)
+    if options.get('prune_isolated_walls', False):
+        prune_isolated_walls(output)
+    if options.get('connect_rooms', False):
+        connect_rooms(output)
 
 
 def correct_edges(output):
