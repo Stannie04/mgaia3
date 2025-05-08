@@ -2,6 +2,9 @@ import random
 
 class OverlappingWFC:
     def __init__(self, width, height, catalog, weights, adjacency):
+        """
+        Initialize the WFC grid, patterns, weights, and adjacency rules.
+        """
         self.width = width
         self.height = height
         self.catalog = catalog
@@ -14,6 +17,9 @@ class OverlappingWFC:
 
 
     def run_step(self):
+        """
+        Perform one collapse step by selecting the cell with minimal entropy and propagating constraints.
+        """
         min_entropy = float('inf')
         min_pos = None
         for y in range(self.height):
@@ -26,7 +32,7 @@ class OverlappingWFC:
 
         if min_pos is None:
             return False
-
+        
         x, y = min_pos
         choices = list(self.wave[y][x])
         weights = [self.weights[i] for i in choices]
@@ -34,13 +40,18 @@ class OverlappingWFC:
         self.wave[y][x] = {chosen}
         self.collapsed[y][x] = True
         self.propagate(x, y)
+
         return True
 
 
     def propagate(self, x, y):
+        """
+        Propagate constraints from a collapsed cell to its neighbors using adjacency rules.
+        """
         stack = [(x, y)]
         while stack:
             cx, cy = stack.pop()
+
             for direction, (dx, dy) in enumerate([(0, -1), (1, 0), (0, 1), (-1, 0)]):
                 nx, ny = cx + dx, cy + dy
                 if 0 <= nx < self.width and 0 <= ny < self.height:
@@ -54,11 +65,16 @@ class OverlappingWFC:
 
 
     def render(self):
+        """
+        Render the current wave state to a 2D grid by sampling the center tile of each collapsed pattern.
+        """
         output = [['?' for _ in range(self.width)] for _ in range(self.height)]
         center = self.pattern_size // 2
+
         for y in range(self.height):
             for x in range(self.width):
                 if len(self.wave[y][x]) == 1:
                     pattern = self.catalog[next(iter(self.wave[y][x]))]
                     output[y][x] = pattern[center][center]
+
         return output

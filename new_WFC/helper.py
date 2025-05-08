@@ -3,6 +3,11 @@ from tqdm import tqdm
 from collections import defaultdict, Counter
 
 def load_map(filename):
+    """
+    Load a single map from a text file, sanitize invalid characters into 
+    floor ('.'), wall ('X'), or out-of-bounds ('-'), 
+    and return it as a list containing the map grid.
+    """
     print(f"\nLoading map from: {filename}")
     with open(filename, "r") as f:
         map_data = [
@@ -10,14 +15,18 @@ def load_map(filename):
             for line in f
         ]
     print(f"Loaded map with dimensions: {len(map_data[0])}x{len(map_data)}\n")
+
     return [map_data]
 
 
 def load_all_maps(folder_path):
+    """
+    Load all .txt maps in a folder, sanitize each
+    line into valid tiles, and return a list of map grids.
+    """
     print(f"\nLoading all maps from: {folder_path}")
     maps = []
     file_count = 0
-
     for filename in os.listdir(folder_path):
         if filename.endswith(".txt"):
             file_path = os.path.join(folder_path, filename)
@@ -29,16 +38,30 @@ def load_all_maps(folder_path):
                 if lines:
                     maps.append(lines)
                     file_count += 1
-
     print(f"Loaded {file_count} maps\n")
+
     return maps
 
 
+def save_output(output, filename="generated_map.txt"):
+    """
+    Write the generated map grid to a text file, one row per line.
+    """
+    print(f"Saving generated map to: {filename}")
+    with open(filename, "w") as f:
+        for row in output:
+            f.write("".join(row) + "\n")
+    print(f"Map saved successfully, dimensions: {len(output[0])}x{len(output)}\n")
+
+
 def extract_patterns(maps, N):
-    print(f"Extracting {N}x{N} patterns.")
+    """
+    Extract all N×N tile patterns from each map by sliding a window 
+    over every possible position and return them as tuples.
+    """
+    print(f"Extracting {N}x{N} patterns")
     patterns = []
     pattern_count = 0
-
     for map_data in maps:
         height, width = len(map_data), len(map_data[0])
         for y in range(height - N + 1):
@@ -49,23 +72,31 @@ def extract_patterns(maps, N):
                 )
                 patterns.append(pattern)
                 pattern_count += 1
-
     print(f"Extracted {pattern_count} total {N}x{N} patterns")
+
     return patterns
 
 
 def build_pattern_catalog(patterns):
-    print("Building pattern catalog.")
+    """
+    Build a catalog of unique patterns and corresponding 
+    weights based on their frequency in the training set.
+    """
+    print("Building pattern catalog")
     counter = Counter(patterns)
     catalog = list(counter.keys())
     weights = [counter[p] for p in catalog]
     print(f"Catalog contains {len(catalog)} unique patterns")
     print(f"Most common pattern appears {max(weights)} times")
     print(f"Least common pattern appears {min(weights)} times")
+
     return catalog, weights
 
 
 def pattern_match(p1, p2, direction):
+    """Check if two patterns p1 and p2 match along the given direction 
+    (0=up,1=right,2=down,3=left) by comparing their bordering rows or columns.
+    """
     N = len(p1)
     if direction == 0:
         return all(p1[0][i] == p2[-1][i] for i in range(N))
@@ -78,6 +109,10 @@ def pattern_match(p1, p2, direction):
 
 
 def compute_tile_adjacency(maps):
+    """
+    Compute sets of adjacent tile pairs in each of 
+    four cardinal directions across all training maps.
+    """
     tile_adj = {d: set() for d in range(4)}
     for map_data in maps:
         H, W = len(map_data), len(map_data[0])
@@ -89,11 +124,17 @@ def compute_tile_adjacency(maps):
                     if 0 <= nx < W and 0 <= ny < H:
                         t2 = map_data[ny][nx]
                         tile_adj[d].add((t1, t2))
+
     return tile_adj
 
 
 def build_adjacency_rules(catalog, tile_adj=None):
-    print("Building adjacency rules.")
+    """
+    Generate adjacency rules for each pattern index: 
+    if two patterns match on their border and (optionally) their center 
+    tiles respect training tile adjacency, allow that transition.
+    """
+    print("Building adjacency rules")
     adjacency = defaultdict(lambda: [set() for _ in range(4)])
     total_rules = 0
     for i, a in enumerate(tqdm(catalog, desc="Processing patterns")):
@@ -111,112 +152,5 @@ def build_adjacency_rules(catalog, tile_adj=None):
                 total_rules += 1
     print(f"Generated {total_rules} adjacency rules for {len(catalog)} patterns")
     print(f"Average rules per pattern: {total_rules / len(catalog):.1f}\n")
+
     return adjacency
-
-
-def save_output(output, filename="generated_map.txt"):
-    print(f"Saving generated map to: {filename}")
-    with open(filename, "w") as f:
-        for row in output:
-            f.write("".join(row) + "\n")
-    print(f"Map saved successfully. Dimensions: {len(output[0])}x{len(output)}\n")
-
-
-def correct_edges(output):
-    height = len(output)
-    if height == 0:
-        return
-    width = len(output[0])
-    for x in range(width):
-        if output[0][x] == '.':
-            output[0][x] = 'X'
-        if output[height - 1][x] == '.':
-            output[height - 1][x] = 'X'
-    for y in range(height):
-        if output[y][0] == '.':
-            output[y][0] = 'X'
-        if output[y][width - 1] == '.':
-            output[y][width - 1] = 'X'
-
-
-def prune_isolated_walls(output):
-    height = len(output)
-    if height == 0:
-        return
-    width = len(output[0])
-    to_prune = []
-    for y in range(height):
-        for x in range(width):
-            if output[y][x] != 'X':
-                continue
-            neighbors = []
-            if y > 0:               neighbors.append(output[y-1][x])
-            if y < height - 1:      neighbors.append(output[y+1][x])
-            if x > 0:               neighbors.append(output[y][x-1])
-            if x < width - 1:       neighbors.append(output[y][x+1])
-            if not any(tile == '.' for tile in neighbors):
-                to_prune.append((y, x))
-    for (y, x) in to_prune:
-        output[y][x] = '-'
-
-
-def connect_rooms(output, corridor_width=1):
-    height = len(output)
-    if height == 0:
-        return
-    width = len(output[0])
-
-    visited = set()
-    rooms = []
-    for y in range(height):
-        for x in range(width):
-            if output[y][x] == '.' and (y, x) not in visited:
-                stack = [(y, x)]
-                visited.add((y, x))
-                comp = []
-                while stack:
-                    cy, cx = stack.pop()
-                    comp.append((cy, cx))
-                    for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                        ny, nx = cy + dy, cx + dx
-                        if (0 <= ny < height and 0 <= nx < width and
-                                output[ny][nx] == '.' and (ny, nx) not in visited):
-                            visited.add((ny, nx))
-                            stack.append((ny, nx))
-                rooms.append(comp)
-
-    if len(rooms) <= 1:
-        return
-
-    rooms_sorted = sorted(rooms, key=lambda c: len(c), reverse=True)
-    base = rooms_sorted[0]
-    for island in rooms_sorted[1:]:
-        min_dist = None
-        best_pair = None
-        for y1, x1 in base:
-            for y2, x2 in island:
-                dist = abs(y1 - y2) + abs(x1 - x2)
-                if min_dist is None or dist < min_dist:
-                    min_dist = dist
-                    best_pair = ((y1, x1), (y2, x2))
-        (y1, x1), (y2, x2) = best_pair
-
-        new_floor_positions = []
-        for xx in range(min(x1, x2), max(x1, x2) + 1):
-            for w in range(corridor_width):
-                yy = y1 + w
-                if 0 <= yy < height and output[yy][xx] != '.':
-                    output[yy][xx] = '.'
-                    new_floor_positions.append((yy, xx))
-        for yy in range(min(y1, y2), max(y1, y2) + 1):
-            for w in range(corridor_width):
-                xx = x2 + w
-                if 0 <= xx < width and output[yy][xx] != '.':
-                    output[yy][xx] = '.'
-                    new_floor_positions.append((yy, xx))
-
-        for y, x in new_floor_positions:
-            for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                ny, nx = y + dy, x + dx
-                if 0 <= ny < height and 0 <= nx < width and output[ny][nx] == '-':
-                    output[ny][nx] = 'X'
