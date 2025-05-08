@@ -26,7 +26,7 @@ def load_all_maps(folder_path):
                 for line in f:
                     sanitized_line = ''.join(c if c in ['-', '.', 'X'] else '.' for c in line.strip())
                     lines.append(list(sanitized_line))
-                if lines: 
+                if lines:
                     maps.append(lines)
                     file_count += 1
 
@@ -34,9 +34,8 @@ def load_all_maps(folder_path):
     return maps
 
 
-
 def extract_patterns(maps, N):
-    print(f"Extracting {N}x{N} patterns...")
+    print(f"Extracting {N}x{N} patterns.")
     patterns = []
     pattern_count = 0
 
@@ -44,7 +43,10 @@ def extract_patterns(maps, N):
         height, width = len(map_data), len(map_data[0])
         for y in range(height - N + 1):
             for x in range(width - N + 1):
-                pattern = tuple(tuple(map_data[y + dy][x + dx] for dx in range(N)) for dy in range(N))
+                pattern = tuple(
+                    tuple(map_data[y + dy][x + dx] for dx in range(N))
+                    for dy in range(N)
+                )
                 patterns.append(pattern)
                 pattern_count += 1
 
@@ -52,44 +54,61 @@ def extract_patterns(maps, N):
     return patterns
 
 
-
 def build_pattern_catalog(patterns):
-    print("Building pattern catalog...")
+    print("Building pattern catalog.")
     counter = Counter(patterns)
     catalog = list(counter.keys())
     weights = [counter[p] for p in catalog]
-
     print(f"Catalog contains {len(catalog)} unique patterns")
     print(f"Most common pattern appears {max(weights)} times")
     print(f"Least common pattern appears {min(weights)} times")
-
     return catalog, weights
 
 
 def pattern_match(p1, p2, direction):
     N = len(p1)
-    if direction == 0:  # up
+    if direction == 0:
         return all(p1[0][i] == p2[-1][i] for i in range(N))
-    elif direction == 1:  # right
+    elif direction == 1:
         return all(p1[i][-1] == p2[i][0] for i in range(N))
-    elif direction == 2:  # down
+    elif direction == 2:
         return all(p1[-1][i] == p2[0][i] for i in range(N))
-    elif direction == 3:  # left
+    elif direction == 3:
         return all(p1[i][0] == p2[i][-1] for i in range(N))
 
 
-def build_adjacency_rules(catalog):
-    print("Building adjacency rules...")
+def compute_tile_adjacency(maps):
+    tile_adj = {d: set() for d in range(4)}
+    for map_data in maps:
+        H, W = len(map_data), len(map_data[0])
+        for y in range(H):
+            for x in range(W):
+                t1 = map_data[y][x]
+                for d, (dx, dy) in enumerate([(0, -1), (1, 0), (0, 1), (-1, 0)]):
+                    nx, ny = x + dx, y + dy
+                    if 0 <= nx < W and 0 <= ny < H:
+                        t2 = map_data[ny][nx]
+                        tile_adj[d].add((t1, t2))
+    return tile_adj
+
+
+def build_adjacency_rules(catalog, tile_adj=None):
+    print("Building adjacency rules.")
     adjacency = defaultdict(lambda: [set() for _ in range(4)])
     total_rules = 0
-
     for i, a in enumerate(tqdm(catalog, desc="Processing patterns")):
         for j, b in enumerate(catalog):
             for direction in range(4):
-                if pattern_match(a, b, direction):
-                    adjacency[i][direction].add(j)
-                    total_rules += 1
-
+                if not pattern_match(a, b, direction):
+                    continue
+                if tile_adj is not None:
+                    c = len(a) // 2
+                    t1 = a[c][c]
+                    t2 = b[c][c]
+                    if (t1, t2) not in tile_adj[direction]:
+                        continue
+                adjacency[i][direction].add(j)
+                total_rules += 1
     print(f"Generated {total_rules} adjacency rules for {len(catalog)} patterns")
     print(f"Average rules per pattern: {total_rules / len(catalog):.1f}\n")
     return adjacency
@@ -101,3 +120,41 @@ def save_output(output, filename="generated_map.txt"):
         for row in output:
             f.write("".join(row) + "\n")
     print(f"Map saved successfully. Dimensions: {len(output[0])}x{len(output)}\n")
+
+
+def correct_edges(output):
+    height = len(output)
+    if height == 0:
+        return
+    width = len(output[0])
+    for x in range(width):
+        if output[0][x] == '.':
+            output[0][x] = 'X'
+        if output[height - 1][x] == '.':
+            output[height - 1][x] = 'X'
+    for y in range(height):
+        if output[y][0] == '.':
+            output[y][0] = 'X'
+        if output[y][width - 1] == '.':
+            output[y][width - 1] = 'X'
+
+
+def prune_isolated_walls(output):
+    height = len(output)
+    if height == 0:
+        return
+    width = len(output[0])
+    to_prune = []
+    for y in range(height):
+        for x in range(width):
+            if output[y][x] != 'X':
+                continue
+            neighbors = []
+            if y > 0:               neighbors.append(output[y-1][x])
+            if y < height - 1:      neighbors.append(output[y+1][x])
+            if x > 0:               neighbors.append(output[y][x-1])
+            if x < width - 1:       neighbors.append(output[y][x+1])
+            if not any(tile == '.' for tile in neighbors):
+                to_prune.append((y, x))
+    for (y, x) in to_prune:
+        output[y][x] = '-'
