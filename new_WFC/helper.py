@@ -158,3 +158,65 @@ def prune_isolated_walls(output):
                 to_prune.append((y, x))
     for (y, x) in to_prune:
         output[y][x] = '-'
+
+
+def connect_rooms(output, corridor_width=1):
+    height = len(output)
+    if height == 0:
+        return
+    width = len(output[0])
+
+    visited = set()
+    rooms = []
+    for y in range(height):
+        for x in range(width):
+            if output[y][x] == '.' and (y, x) not in visited:
+                stack = [(y, x)]
+                visited.add((y, x))
+                comp = []
+                while stack:
+                    cy, cx = stack.pop()
+                    comp.append((cy, cx))
+                    for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                        ny, nx = cy + dy, cx + dx
+                        if (0 <= ny < height and 0 <= nx < width and
+                                output[ny][nx] == '.' and (ny, nx) not in visited):
+                            visited.add((ny, nx))
+                            stack.append((ny, nx))
+                rooms.append(comp)
+
+    if len(rooms) <= 1:
+        return
+
+    rooms_sorted = sorted(rooms, key=lambda c: len(c), reverse=True)
+    base = rooms_sorted[0]
+    for island in rooms_sorted[1:]:
+        min_dist = None
+        best_pair = None
+        for y1, x1 in base:
+            for y2, x2 in island:
+                dist = abs(y1 - y2) + abs(x1 - x2)
+                if min_dist is None or dist < min_dist:
+                    min_dist = dist
+                    best_pair = ((y1, x1), (y2, x2))
+        (y1, x1), (y2, x2) = best_pair
+
+        new_floor_positions = []
+        for xx in range(min(x1, x2), max(x1, x2) + 1):
+            for w in range(corridor_width):
+                yy = y1 + w
+                if 0 <= yy < height and output[yy][xx] != '.':
+                    output[yy][xx] = '.'
+                    new_floor_positions.append((yy, xx))
+        for yy in range(min(y1, y2), max(y1, y2) + 1):
+            for w in range(corridor_width):
+                xx = x2 + w
+                if 0 <= xx < width and output[yy][xx] != '.':
+                    output[yy][xx] = '.'
+                    new_floor_positions.append((yy, xx))
+
+        for y, x in new_floor_positions:
+            for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                ny, nx = y + dy, x + dx
+                if 0 <= ny < height and 0 <= nx < width and output[ny][nx] == '-':
+                    output[ny][nx] = 'X'

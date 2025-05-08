@@ -3,57 +3,37 @@ import argparse
 
 from WFC import OverlappingWFC
 from UI import UI
-from helper import (
-    load_map,
-    load_all_maps,
-    extract_patterns,
-    build_pattern_catalog,
-    compute_tile_adjacency,
-    build_adjacency_rules,
-    save_output,
-    correct_edges,
-    prune_isolated_walls
-)
+from helper import *
 
 def repair(output):
     correct_edges(output)
     prune_isolated_walls(output)
+    connect_rooms(output)
 
 def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_window_size):
     base_legend_fraction = 0.20
-    min_legend_width = 150
-
-    map_width = min(map_size[0], MAX_MAP_SIZE)
-    map_height = min(map_size[1], MAX_MAP_SIZE)
-
-    patterns = extract_patterns(training_map, N)
-    catalog, weights = build_pattern_catalog(patterns)
-    tile_adj = compute_tile_adjacency(training_map)
-    adjacency = build_adjacency_rules(catalog, tile_adj)
-
-    wfc = OverlappingWFC(map_width, map_height, catalog, weights, adjacency)
-    output = wfc.render()
+    legend_width = 200
 
     pygame.init()
-    generating = True
     running = True
 
     while running:
+        map_width = min(map_size[0], MAX_MAP_SIZE)
+        map_height = min(map_size[1], MAX_MAP_SIZE)
+
+        patterns = extract_patterns(training_map, N)
+        catalog, weights = build_pattern_catalog(patterns)
+        tile_adj = compute_tile_adjacency(training_map)
+        adjacency = build_adjacency_rules(catalog, tile_adj)
+        wfc = OverlappingWFC(map_width, map_height, catalog, weights, adjacency)
+        output = wfc.render()
+        generating = True
+
         grid_area_width = int(base_window_size[0] * (1 - base_legend_fraction))
         cell_size_width = grid_area_width // map_width
         cell_size_height = base_window_size[1] // map_height
         cell_size = min(cell_size_width, cell_size_height)
-        if cell_size < 1:
-            cell_size = 1
-            map_width = min(map_width, grid_area_width)
-            map_height = min(map_height, base_window_size[1])
         grid_width = map_width * cell_size
-        legend_width = base_window_size[0] - grid_width
-        if legend_width < min_legend_width:
-            legend_width = min_legend_width
-            grid_width = base_window_size[0] - legend_width
-            cell_size = grid_width // map_width
-            grid_width = map_width * cell_size
         window_width = grid_width + legend_width
         window_height = base_window_size[1]
 
@@ -72,7 +52,7 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
         restart_ui = False
 
         while running and not restart_ui:
-            dt = clock.tick(60)
+            dt = clock.tick(120)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -82,17 +62,12 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
                     new_N = ui.get_N_value() or N
                     new_w = ui.get_width_value() or map_width
                     new_h = ui.get_height_value() or map_height
-                    if new_N != N or new_w != map_width or new_h != map_height:
-                        N, map_width, map_height = new_N, new_w, new_h
-                        restart_ui = True
-                        break
 
-                    patterns = extract_patterns(training_map, N)
-                    catalog, weights = build_pattern_catalog(patterns)
-                    tile_adj = compute_tile_adjacency(training_map)
-                    adjacency = build_adjacency_rules(catalog, tile_adj)
-                    wfc = OverlappingWFC(map_width, map_height, catalog, weights, adjacency)
-                    generating = True
+                    N, map_width, map_height = new_N, new_w, new_h
+                    map_size = (map_width, map_height)
+                    restart_ui = True
+                    break
+
 
                 if save:
                     save_output(output)
@@ -109,6 +84,7 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
             ui.draw(output, colors, generating)
 
     pygame.quit()
+
 
 
 def run_wfc(training_map, N, map_size):
@@ -138,8 +114,8 @@ if __name__ == "__main__":
     # training_map = load_all_maps("../data/all_txt_files")
 
     N = 3
-    MAX_MAP_SIZE = 80
-    map_size = (30, 30)
+    MAX_MAP_SIZE = 70
+    map_size = (40, 40)
     base_window_size = (900, 600)
 
     if args.visualize:

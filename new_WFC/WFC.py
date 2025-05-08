@@ -44,7 +44,6 @@ class OverlappingWFC:
             for direction, (dx, dy) in enumerate([(0, -1), (1, 0), (0, 1), (-1, 0)]):
                 nx, ny = cx + dx, cy + dy
                 if 0 <= nx < self.width and 0 <= ny < self.height:
-                    changed = False
                     possible = set()
                     for t in self.wave[cy][cx]:
                         possible.update(self.adjacency[t][direction])

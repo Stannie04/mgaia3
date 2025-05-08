@@ -23,7 +23,7 @@ class UI:
         self.make_pressed = False
         self.save_pressed = False
 
-        self.font = pygame.font.SysFont('Arial', max(15, min(20, cell_size)), bold=True)
+        self.font = pygame.font.SysFont('Arial', 18, bold=True)
         self.dot_states = ['.', '..', '...']
         self.dot_index = 0
         self.dot_timer = 0
@@ -122,7 +122,7 @@ class UI:
         height_surface = self.font.render(height_text, True, (255, 255, 255))
         self.screen.blit(height_surface, (self.height_box_rect.x + 5, self.height_box_rect.y + 5))
 
-        label_font = pygame.font.SysFont('Arial', 14)
+        label_font = pygame.font.SysFont('Arial', 18)
         width_label = label_font.render("Width:", True, (255, 255, 255))
         height_label = label_font.render("Height:", True, (255, 255, 255))
         self.screen.blit(width_label, (self.width_box_rect.x, self.width_box_rect.y - 20))
