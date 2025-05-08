@@ -11,7 +11,6 @@ def repair(output):
     connect_rooms(output)
 
 def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_window_size):
-    base_legend_fraction = 0.20
     legend_width = 200
 
     pygame.init()
@@ -29,15 +28,25 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
         output = wfc.render()
         generating = True
 
-        grid_area_width = int(base_window_size[0] * (1 - base_legend_fraction))
-        cell_size = grid_area_width // map_width
+        grid_area_width = base_window_size[0] - legend_width
+
+        grid_area_width = base_window_size[0] - legend_width
+        grid_area_height = base_window_size[1]
+
+        cell_size_w = grid_area_width // map_width
+        cell_size_h = grid_area_height // map_height
+        cell_size = min(cell_size_w, cell_size_h)
+
         grid_width = map_width * cell_size
+        grid_height = map_height * cell_size
+
         window_width = grid_width + legend_width
-        window_height = base_window_size[1]
+        window_height = grid_height
 
         screen = pygame.display.set_mode((window_width, window_height))
-        ui = UI(screen, grid_width, window_height, cell_size,
+        ui = UI(screen, grid_width, grid_height, cell_size,
                 legend_width, (map_width, map_height), N, MAX_MAP_SIZE)
+
 
         colors = {
             '.': (255, 255, 255),
