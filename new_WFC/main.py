@@ -30,9 +30,7 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
         generating = True
 
         grid_area_width = int(base_window_size[0] * (1 - base_legend_fraction))
-        cell_size_width = grid_area_width // map_width
-        cell_size_height = base_window_size[1] // map_height
-        cell_size = min(cell_size_width, cell_size_height)
+        cell_size = grid_area_width // map_width
         grid_width = map_width * cell_size
         window_width = grid_width + legend_width
         window_height = base_window_size[1]
@@ -114,7 +112,7 @@ if __name__ == "__main__":
     # training_map = load_all_maps("../data/all_txt_files")
 
     N = 3
-    MAX_MAP_SIZE = 70
+    MAX_MAP_SIZE = 99
     map_size = (40, 40)
     base_window_size = (900, 600)
 
