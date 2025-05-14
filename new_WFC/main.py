@@ -98,7 +98,7 @@ if __name__ == "__main__":
     parser.add_argument('--visualize', action='store_true', help="Enable visualization")
     args = parser.parse_args()
 
-    training_map = load_map("training_maps/training_map_3.txt")
+    training_map = load_map("training_maps/training_map_4.txt")
     # training_map = load_all_maps("../data/all_txt_files")
 
     N = 3

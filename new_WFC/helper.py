@@ -1,21 +1,35 @@
 import os
+from PIL import Image
 from tqdm import tqdm
 from collections import defaultdict, Counter
 
 def load_map(filename):
     """
-    Load a single map from a text file, sanitize invalid characters into 
-    floor ('.'), wall ('X'), or out-of-bounds ('-'), 
-    and return it as a list containing the map grid.
+    Load a single map from a text file, print and save the raw and sanitized versions.
     """
     print(f"\nLoading map from: {filename}")
     with open(filename, "r") as f:
-        map_data = [
-            [c if c in ['-', '.', 'X'] else '.' for c in line.strip()]
-            for line in f
-        ]
-    print(f"Loaded map with dimensions: {len(map_data[0])}x{len(map_data)}\n")
+        raw_lines = [line.rstrip("\n") for line in f]
 
+    # print("Raw map:")
+    # for line in raw_lines:
+    #     print(line)
+
+    # raw_map = [list(line) for line in raw_lines]
+    # save_training_map_as_image(raw_map, "visualize_training_maps/raw_map.png")
+
+    map_data = [
+        [c if c in ['-', '.', 'X'] else '.' for c in line]
+        for line in raw_lines
+    ]
+
+    # print("\nSanitized map:")
+    # for row in map_data:
+    #     print("".join(row))
+
+    # save_training_map_as_image(map_data, "visualize_training_maps/sanitized_map.png")
+
+    print(f"\nLoaded map with dimensions: {len(map_data[0])}x{len(map_data)}\n")
     return [map_data]
 
 
@@ -43,7 +57,34 @@ def load_all_maps(folder_path):
     return maps
 
 
-def save_output(output, filename="generated_map.txt"):
+def save_training_map_as_image(map_data, filename, tile_size=10):
+    """
+    Save a map grid (2D list of chars) as an image file.
+    Uses colors: '.' = white, 'X' = gray, '-' = black, others = red.
+    """
+    height = len(map_data)
+    width = len(map_data[0])
+    img = Image.new("RGB", (width * tile_size, height * tile_size))
+    pixels = img.load()
+
+    colors = {
+        '.': (255, 255, 255),  # floor
+        'X': (128, 128, 128),  # wall
+        '-': (0, 0, 0),        # out-of-bounds
+    }
+
+    for y in range(height):
+        for x in range(width):
+            color = colors.get(map_data[y][x], (255, 0, 0))  # red = unknown
+            for dy in range(tile_size):
+                for dx in range(tile_size):
+                    pixels[x * tile_size + dx, y * tile_size + dy] = color
+
+    img.save(filename)
+    print(f"Saved image: {filename}")
+
+
+def save_output(output, filename="generated_maps/generated_map.txt"):
     """
     Write the generated map grid to a text file, one row per line.
     """
