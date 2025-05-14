@@ -1,4 +1,5 @@
 from collections import deque
+import random
 
 def find_furthest_walkable_pair(output):
     """
@@ -39,7 +40,7 @@ def place_start_and_exit(output):
     Place start ('<') and exit ('>') markers on the output grid.
     The start marker is placed at the furthest walkable tile from the exit marker.
     """
-    
+
     result = find_furthest_walkable_pair(output)
     if result:
         (y1, x1), (y2, x2), _ = result
@@ -54,3 +55,26 @@ def place_start_and_exit(output):
 
     # Mark endpoint if no wall adjacent
     output[y2][x2] = '>'
+
+def place_enemies(output, enemy_ratio=0.04):
+    """
+    Place enemies ('E') on the output grid based on the specified enemy ratio.
+    The ratio determines the proportion of walkable tiles that will be occupied by enemies.
+    """
+    height, width = len(output), len(output[0])
+    walkable_tiles = [(y, x) for y in range(height) for x in range(width) if output[y][x] == '.']
+    num_enemies = int(len(walkable_tiles) * enemy_ratio)
+    
+    for i in range(num_enemies):
+        y, x = random.choice(walkable_tiles)
+        output[y][x] = 'E'
+        try:    
+            for dy in [-1, 0, 1]:
+                for dx in [-1, 0, 1]:
+                    ny, nx = y + dy, x + dx
+                    # Ensure the adjacent tile is within bounds and is walkable
+                    if 0 <= ny < height and 0 <= nx < width and output[ny][nx] == '.':
+                        if (ny, nx) in walkable_tiles:
+                            walkable_tiles.remove((ny, nx))  # Remove adjacent tile from walkable list
+        except:
+            pass

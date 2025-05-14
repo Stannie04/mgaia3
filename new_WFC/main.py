@@ -40,7 +40,7 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
         ui = UI(screen, grid_width, grid_height, cell_size, legend_width,
                 (map_width, map_height), N, MAX_MAP_SIZE)
         colors = {'.': (255,255,255), 'X': (128,128,128),
-                  '-': (0,0,0), '?': (60,60,60), '<':(0,153,76), '>': (153,0,0)}
+                  '-': (0,0,0), '?': (60,60,60), '<':(255,204,255), '>': (0,153,76), 'E': (153,0,0)}
         clock = pygame.time.Clock()
 
         restart_ui = False
@@ -64,7 +64,7 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
                 if do_repair:
                     repair(output, ui.repair_options)
                     place_start_and_exit(output) # Tijdelijk hier want geen zin om aparte knop te maken
-
+                    place_enemies(output) # Tijdelijk hier want geen zin om aparte knop te maken
             if generating:
                 if not wfc.run_step():
                     generating = False
@@ -93,6 +93,7 @@ def run_wfc(training_map, N, map_size):
     output = wfc.render()
     repair(output)
     place_start_and_exit(output)
+    place_enemies(output)
     save_output(output)
 
 
