@@ -7,6 +7,7 @@ from WFC import OverlappingWFC
 
 from helper import *
 from repair import repair
+from fill_tiles import *
 
 def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_window_size):
     """
@@ -62,6 +63,7 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
                     save_output(output)
                 if do_repair:
                     repair(output, ui.repair_options)
+                    place_start_and_exit(output) # Tijdelijk hier want geen zin om aparte knop te maken
 
             if generating:
                 if not wfc.run_step():
@@ -90,6 +92,7 @@ def run_wfc(training_map, N, map_size):
     
     output = wfc.render()
     repair(output)
+    place_start_and_exit(output)
     save_output(output)
 
 
