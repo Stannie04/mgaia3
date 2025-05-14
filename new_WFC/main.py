@@ -7,7 +7,7 @@ from WFC import OverlappingWFC
 
 from helper import *
 from repair import repair
-from fill_tiles import *
+from fill_tiles import fill_tiles
 
 def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_window_size):
     """
@@ -51,7 +51,8 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                make, save, do_repair = ui.handle_event(event)
+                # unpack the new fill button signal as do_fill
+                make, save, do_repair, do_fill = ui.handle_event(event)
                 if make:
                     N = ui.get_N_value() or N
                     w, h = ui.get_width_value(), ui.get_height_value()
@@ -63,8 +64,8 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
                     save_output(output)
                 if do_repair:
                     repair(output, ui.repair_options)
-                    place_start_and_exit(output) # Tijdelijk hier want geen zin om aparte knop te maken
-                    place_enemies(output) # Tijdelijk hier want geen zin om aparte knop te maken
+                if do_fill:
+                    fill_tiles(output)
             if generating:
                 if not wfc.run_step():
                     generating = False
@@ -92,8 +93,7 @@ def run_wfc(training_map, N, map_size):
     
     output = wfc.render()
     repair(output)
-    place_start_and_exit(output)
-    place_enemies(output)
+    fill_tiles(output)
     save_output(output)
 
 
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     parser.add_argument('--visualize', action='store_true', help="Enable visualization")
     args = parser.parse_args()
 
-    training_map = load_map("training_maps/training_map_4.txt")
+    training_map = load_map("training_maps/training_map_1.txt")
     # training_map = load_all_maps("../data/all_txt_files")
 
     N = 3

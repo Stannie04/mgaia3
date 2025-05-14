@@ -1,6 +1,10 @@
 from collections import deque
 import random
 
+def fill_tiles(output):
+    place_start_and_exit(output)
+    place_enemies(output)
+
 def find_furthest_walkable_pair(output):
     """
     Find the two furthest walkable tiles ('.') in the output grid.
@@ -35,6 +39,7 @@ def find_furthest_walkable_pair(output):
 
     return max_pair
 
+
 def place_start_and_exit(output):
     """
     Place start ('<') and exit ('>') markers on the output grid.
@@ -55,6 +60,7 @@ def place_start_and_exit(output):
 
     # Mark endpoint if no wall adjacent
     output[y2][x2] = '>'
+
 
 def place_enemies(output, enemy_ratio=0.04):
     """
