@@ -60,7 +60,8 @@ class UI:
             ("correct_edges",       "Correct edges"),
             ("seal_against_bounds", "Seal against bounds"),
             ("prune_isolated_walls","Prune isolated walls"),
-            ("connect_rooms",       "Connect rooms")
+            ("connect_rooms",       "Connect rooms"),
+            ("place_start_and_exit", "Place start and exit"),
         ]
 
         self.repair_options = { key: True for key, _ in self.repair_functions }
@@ -218,6 +219,8 @@ class UI:
             ("White: Walkable", (255,255,255)),
             ("Grey: Walls",      (128,128,128)),
             ("Black: Out of Bounds", (0,0,0)),
+            ("Green: Start", (0,153,76)),
+            ("Red: Exit", (153,0,0)),	
             ("", (0,0,0)),
             (
                 ('Generating'+self.dot_states[self.dot_index]) if generating else 'Finished wfc',

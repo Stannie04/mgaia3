@@ -39,7 +39,7 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
         ui = UI(screen, grid_width, grid_height, cell_size, legend_width,
                 (map_width, map_height), N, MAX_MAP_SIZE)
         colors = {'.': (255,255,255), 'X': (128,128,128),
-                  '-': (0,0,0), '?': (60,60,60)}
+                  '-': (0,0,0), '?': (60,60,60), '<':(0,153,76), '>': (153,0,0)}
         clock = pygame.time.Clock()
 
         restart_ui = False
