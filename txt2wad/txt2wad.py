@@ -116,6 +116,7 @@ def extract_things(grid):
                 thing_y = int((y + 0.5) * SCALE)
                 thing_type = thing_type_map[cell]
                 things.append((thing_x, thing_y, thing_type))
+                print(f"Thing placed at ({thing_x}, {thing_y}) of type {thing_type}")
     return things
 
 
@@ -144,6 +145,7 @@ def build_vertices_and_linedefs(edges):
         i1 = get_vertex_index(v1)
         i2 = get_vertex_index(v2)
         linedefs.append((i1, i2))
+        linedefs.append((i2, i1))  # add reverse edge for two-sided lines
     return vertex_list, linedefs
 
 
@@ -159,7 +161,7 @@ def build_things_lump(things):
     lump = b""
     for (x, y, thing_type) in things:
         # Using little-endian shorts (2 bytes each)
-        lump += struct.pack("<hhhhh", x, y, 0, thing_type, 0)
+        lump += struct.pack("<hhhhh", x, y, 0, thing_type, 7)
     return lump
 
 
@@ -207,13 +209,15 @@ def build_sidedefs_lump(num_sidedefs):
     We fill with dummy values (offsets 0, textures "NULL____", sector 0).
     """
     lump = b""
-    tex = b"NULL____"  # exactly 8 bytes
+    up = b"NULL____"  # exactly 8 bytes
+    mid = b"BRICK01_"  # exactly 8 bytes
+    low = b"NULL____"  # exactly 8 bytes
     for _ in range(num_sidedefs):
         xoffs = 0
         yoffs = 0
         # sector number is 0 (the single sector we create later)
         sector = 0
-        lump += struct.pack("<hh8s8s8sh", xoffs, yoffs, tex, tex, tex, sector)
+        lump += struct.pack("<hh8s8s8sh", xoffs, yoffs, up, mid, low, sector)
     return lump
 
 

@@ -29,8 +29,9 @@ def get_action(keybinds):
 def init_game():
     game = vzd.DoomGame()
 
-    game.set_doom_game_path("data/doom.wad")
-    # game.set_doom_scenario_path("E1M1")
+    # game.set_doom_game_path("data/doom.wad")
+    # game.set_doom_scenario_path("data/E1M1.wad")
+    game.set_doom_scenario_path('data/test.wad')
     game.set_screen_resolution(vzd.ScreenResolution.RES_640X480)
     game.set_screen_format(vzd.ScreenFormat.RGB24)
     game.set_render_hud(True)
