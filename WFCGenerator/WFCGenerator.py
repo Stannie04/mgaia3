@@ -39,8 +39,20 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
         screen = pygame.display.set_mode((grid_width + legend_width, grid_height))
         ui = UI(screen, grid_width, grid_height, cell_size, legend_width,
                 (map_width, map_height), N, MAX_MAP_SIZE)
-        colors = {'.': (255,255,255), 'X': (128,128,128),
-                  '-': (0,0,0), '?': (60,60,60), '<':(255,204,255), '>': (0,153,76), 'E': (153,0,0)}
+        colors = {
+            '.': (255,255,255), # floor
+            'X': (128,128,128), # wall
+            '-': (0,0,0), # out-of-bounds
+            '?': (60,60,60), # unknown
+            '<':(50,205,50), # start
+            '>': (65,105,225), # exit
+            'E': (153,0,0), # enemy
+            'W': (29,39,57), # weapoon
+            'A': (255,255,153), # ammo
+            'H': (255,192,203), # health
+            'B': (255,165,0), # explosive barrel
+            ':': (230,230,250) # decorative
+        }
         clock = pygame.time.Clock()
 
         restart_ui = False
@@ -101,13 +113,13 @@ def run_wfc(training_map, N, map_size):
     save_output(output)
 
 
-def call_wfc(traning_map_path="training_maps/training_map_1.txt", save_path="generated_maps/generated_map.txt", N=3, map_size=(40,40)):
+def call_wfc(training_map_path="training_map", save_path="generated_maps/generated_map.txt", N=3, map_size=(40,40)):
     """
     Call function to run WFC with specified parameters.
     Used for running the entire program in one go.
     """
-    training_map = load_map(traning_map_path)
-    # training_map = load_all_maps(traning_map_path)
+    # training_map = load_map(training_map_path)
+    training_map = load_all_maps(training_map_path)
 
     patterns = extract_patterns(training_map, N)
     catalog, weights = build_pattern_catalog(patterns)
@@ -134,13 +146,13 @@ if __name__ == "__main__":
     parser.add_argument('--visualize', action='store_true', help="Enable visualization")
     args = parser.parse_args()
 
-    training_map = load_map("training_maps/training_map_1.txt")
-    # training_map = load_all_maps("../data/all_txt_files")
+    # training_map = load_map("training_maps/training_map_3.txt")
+    training_map = load_all_maps("training_map")
 
     N = 3
-    MAX_MAP_SIZE = 99
-    map_size = (40, 40)
-    base_window_size = (900, 600)
+    MAX_MAP_SIZE = 150
+    map_size = (120, 120)   
+    base_window_size = (1000, 1000)
 
     if args.visualize:
         run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_window_size)

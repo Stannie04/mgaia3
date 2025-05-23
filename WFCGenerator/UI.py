@@ -187,7 +187,7 @@ class UI:
         # Draw sidebar background
         pygame.draw.rect(
             self.screen,
-            (40, 40, 40),
+            (100, 100, 100),
             (self.grid_width, 0, self.legend_width, self.grid_height)
         )
         # Draw inputs
@@ -241,9 +241,14 @@ class UI:
             ("White: Walkable", (255, 255, 255)),
             ("Grey: Walls", (128, 128, 128)),
             ("Black: Out of Bounds", (0, 0, 0)),
-            ("Pink: Start", (255, 204, 255)),
-            ("Green: Exit", (0, 153, 76)),
+            ("Green: Start", (50,205,50)),
+            ("Blue: Exit", (65,105,225)),
             ("Red: Enemy", (153, 0, 0)),
+            ("Steel Blue: Weapon", (29, 39, 57)),
+            ("Yellow: Ammo", (255, 255, 153)),
+            ("Pink: Health Pack", (255, 192, 203)),
+            ("Orange: Explosive", (255, 165, 0)),
+            ("Purple: Decoration", (230, 230, 250)),
             ("", (0, 0, 0)),
             (('Generating'+self.dot_states[self.dot_index]) if generating else 'Finished wfc',
              (255, 0, 0) if generating else (0, 255, 0))
