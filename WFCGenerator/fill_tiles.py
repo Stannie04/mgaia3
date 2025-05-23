@@ -2,8 +2,39 @@ from collections import deque
 import random
 
 def fill_tiles(output):
+    height, width = len(output), len(output[0])
+    walkable_tiles = [(y, x) for y in range(height) for x in range(width) if output[y][x] == '.']
+    print(f"Walkable tiles: {len(walkable_tiles)}")
+    
+    # Place start and exit markers
     place_start_and_exit(output)
-    place_enemies(output)
+
+    # Place enemies
+    num_enemies = int(len(walkable_tiles) * 0.03)
+    random_placement(output, num_enemies, 'E')
+    
+    # Place weapons
+    num_weapons = random.randint(1, 5)
+    random_placement(output, num_weapons, 'W')
+
+    # Place ammo 
+    num_ammo = int(len(walkable_tiles) * 0.01)
+    random_placement(output, num_ammo, 'A')
+
+    # Place health packs
+    num_health = int(len(walkable_tiles) * 0.03)
+    random_placement(output, num_health, 'H')
+
+    # Place explosives
+    num_explosives = random.randint(0, 10)
+    random_placement(output, num_explosives, 'B')
+
+    # Place decoration
+    num_decoration = int(len(walkable_tiles) * 0.01)
+    random_placement(output, num_decoration, ':')
+
+
+    
 
 def find_furthest_walkable_pair(output):
     """
@@ -61,19 +92,18 @@ def place_start_and_exit(output):
     # Mark endpoint if no wall adjacent
     output[y2][x2] = '>'
 
-
-def place_enemies(output, enemy_ratio=0.04):
+   
+def random_placement(output, num_items, output_char):
     """
-    Place enemies ('E') on the output grid based on the specified enemy ratio.
-    The ratio determines the proportion of walkable tiles that will be occupied by enemies.
+    Place item on the output grid based on the specified enemy ratio.
     """
     height, width = len(output), len(output[0])
     walkable_tiles = [(y, x) for y in range(height) for x in range(width) if output[y][x] == '.']
-    num_enemies = int(len(walkable_tiles) * enemy_ratio)
     
-    for i in range(num_enemies):
+    
+    for i in range(num_items):
         y, x = random.choice(walkable_tiles)
-        output[y][x] = 'E'
+        output[y][x] = output_char
         try:    
             for dy in [-1, 0, 1]:
                 for dx in [-1, 0, 1]:

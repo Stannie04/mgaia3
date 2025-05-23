@@ -73,7 +73,7 @@ def prune_isolated_walls(output):
         output[y][x] = '-'
 
 
-def connect_rooms(output, corridor_width=1):
+def connect_rooms(output, corridor_width=2):
     """
     Connect disjoint floor regions (rooms) using a minimum spanning tree approach:
     1. Identify connected components via DFS.
@@ -188,7 +188,7 @@ def seal_against_bounds(output):
         output[y][x] = 'X'
 
 
-def remove_small_rooms(output, min_size=7):
+def remove_small_rooms(output, min_size=12):
     """
     Detect connected floor regions using DFS and fill any region 
     smaller than min_size tiles by converting its tiles to walls.
