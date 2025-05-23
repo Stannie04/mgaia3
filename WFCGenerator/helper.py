@@ -11,15 +11,23 @@ def load_map(filename):
     with open(filename, "r") as f:
         raw_lines = [line.rstrip("\n") for line in f]
 
-    raw_map = [list(line) for line in raw_lines]
-    save_map_as_image(raw_map, "visualize_maps/raw_training_map.png")
+    # print("Raw map:")
+    # for line in raw_lines:
+    #     print(line)
+
+    # raw_map = [list(line) for line in raw_lines]
+    # save_training_map_as_image(raw_map, "visualize_training_maps/raw_map.png")
 
     map_data = [
         [c if c in ['-', '.', 'X'] else '.' for c in line]
         for line in raw_lines
     ]
 
-    save_map_as_image(map_data, "visualize_maps/sanitized_training_map.png")
+    # print("\nSanitized map:")
+    # for row in map_data:
+    #     print("".join(row))
+
+    # save_training_map_as_image(map_data, "visualize_training_maps/sanitized_map.png")
 
     print(f"\nLoaded map with dimensions: {len(map_data[0])}x{len(map_data)}\n")
     return [map_data]
@@ -49,9 +57,10 @@ def load_all_maps(folder_path):
     return maps
 
 
-def save_map_as_image(map_data, filename, tile_size=10):
+def save_training_map_as_image(map_data, filename, tile_size=10):
     """
     Save a map grid (2D list of chars) as an image file.
+    Uses colors: '.' = white, 'X' = gray, '-' = black, others = red.
     """
     height = len(map_data)
     width = len(map_data[0])
@@ -59,23 +68,14 @@ def save_map_as_image(map_data, filename, tile_size=10):
     pixels = img.load()
 
     colors = {
-        '.': (255,255,255), # floor
-        'X': (128,128,128), # wall
-        '-': (0,0,0), # out-of-bounds
-        '?': (60,60,60), # unknown
-        '<':(50,205,50), # start
-        '>': (65,105,225), # exit
-        'E': (153,0,0), # enemy
-        'W': (29,39,57), # weapoon
-        'A': (255,255,153), # ammo
-        'H': (255,192,203), # health
-        'B': (255,165,0), # explosive barrel
-        ':': (230,230,250) # decorative
+        '.': (255, 255, 255),  # floor
+        'X': (128, 128, 128),  # wall
+        '-': (0, 0, 0),        # out-of-bounds
     }
 
     for y in range(height):
         for x in range(width):
-            color = colors.get(map_data[y][x], (255,255,255))  # uknown = white
+            color = colors.get(map_data[y][x], (255, 0, 0))  # red = unknown
             for dy in range(tile_size):
                 for dx in range(tile_size):
                     pixels[x * tile_size + dx, y * tile_size + dy] = color
@@ -94,12 +94,10 @@ def save_output(output, filename="generated_maps/generated_map.txt"):
             f.write("".join(row) + "\n")
     print(f"Map saved successfully, dimensions: {len(output[0])}x{len(output)}\n")
 
-    save_map_as_image(output, "visualize_maps/generated_map.png", tile_size=10)
-
 
 def extract_patterns(maps, N):
     """
-    Extract all N×N tile patterns from each map by sliding a window
+    Extract all N×N tile patterns from each map by sliding a window 
     over every possible position and return them as tuples.
     """
     print(f"Extracting {N}x{N} patterns")
@@ -122,7 +120,7 @@ def extract_patterns(maps, N):
 
 def build_pattern_catalog(patterns):
     """
-    Build a catalog of unique patterns and corresponding
+    Build a catalog of unique patterns and corresponding 
     weights based on their frequency in the training set.
     """
     print("Building pattern catalog")
@@ -137,7 +135,7 @@ def build_pattern_catalog(patterns):
 
 
 def pattern_match(p1, p2, direction):
-    """Check if two patterns p1 and p2 match along the given direction
+    """Check if two patterns p1 and p2 match along the given direction 
     (0=up,1=right,2=down,3=left) by comparing their bordering rows or columns.
     """
     N = len(p1)
@@ -153,7 +151,7 @@ def pattern_match(p1, p2, direction):
 
 def compute_tile_adjacency(maps):
     """
-    Compute sets of adjacent tile pairs in each of
+    Compute sets of adjacent tile pairs in each of 
     four cardinal directions across all training maps.
     """
     tile_adj = {d: set() for d in range(4)}
@@ -173,8 +171,8 @@ def compute_tile_adjacency(maps):
 
 def build_adjacency_rules(catalog, tile_adj=None):
     """
-    Generate adjacency rules for each pattern index:
-    if two patterns match on their border and (optionally) their center
+    Generate adjacency rules for each pattern index: 
+    if two patterns match on their border and (optionally) their center 
     tiles respect training tile adjacency, allow that transition.
     """
     print("Building adjacency rules")
