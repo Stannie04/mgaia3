@@ -86,15 +86,47 @@ def run_wfc(training_map, N, map_size):
     tile_adj = compute_tile_adjacency(training_map)
     adjacency = build_adjacency_rules(catalog, tile_adj)
     wfc = OverlappingWFC(map_size[0], map_size[1], catalog, weights, adjacency)
-    
+
+    actual = 0
     with tqdm(total=map_size[0] * map_size[1], desc="Generating map") as pbar:
         while wfc.run_step():
             pbar.update(1)
-    
+            actual += 1
+        pbar.total = actual
+        pbar.refresh()
+
     output = wfc.render()
     repair(output)
     fill_tiles(output)
     save_output(output)
+
+
+def call_wfc(traning_map_path="training_maps/training_map_1.txt", save_path="generated_maps/generated_map.txt", N=3, map_size=(40,40)):
+    """
+    Call function to run WFC with specified parameters.
+    Used for running the entire program in one go.
+    """
+    training_map = load_map(traning_map_path)
+    # training_map = load_all_maps(traning_map_path)
+
+    patterns = extract_patterns(training_map, N)
+    catalog, weights = build_pattern_catalog(patterns)
+    tile_adj = compute_tile_adjacency(training_map)
+    adjacency = build_adjacency_rules(catalog, tile_adj)
+    wfc = OverlappingWFC(map_size[0], map_size[1], catalog, weights, adjacency)
+
+    actual = 0
+    with tqdm(total=map_size[0] * map_size[1], desc="Generating map") as pbar:
+        while wfc.run_step():
+            pbar.update(1)
+            actual += 1
+        pbar.total = actual
+        pbar.refresh()
+
+    output = wfc.render()
+    repair(output)
+    fill_tiles(output)
+    save_output(output, filename=save_path)
 
 
 if __name__ == "__main__":
