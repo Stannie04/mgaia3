@@ -150,9 +150,9 @@ if __name__ == "__main__":
     # training_map = load_all_maps("../data/all_txt_files")
 
     N = 3
-    MAX_MAP_SIZE = 99
-    map_size = (40, 40)
-    base_window_size = (900, 600)
+    MAX_MAP_SIZE = 150
+    map_size = (120, 120)   
+    base_window_size = (1000, 1000)
 
     if args.visualize:
         run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_window_size)

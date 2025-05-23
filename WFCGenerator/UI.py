@@ -187,7 +187,7 @@ class UI:
         # Draw sidebar background
         pygame.draw.rect(
             self.screen,
-            (40, 40, 40),
+            (100, 100, 100),
             (self.grid_width, 0, self.legend_width, self.grid_height)
         )
         # Draw inputs

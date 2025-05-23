@@ -4,47 +4,41 @@ import random
 def fill_tiles(output):
     height, width = len(output), len(output[0])
     walkable_tiles = [(y, x) for y in range(height) for x in range(width) if output[y][x] == '.']
-    print(f"Walkable tiles: {len(walkable_tiles)}")
-    
-    # Place start and exit markers
-    place_start_and_exit(output)
 
+    # Place start and exit markers
+    place_start_and_exit(output, walkable_tiles, height, width)
+    print("Walkable tiles", len(walkable_tiles))
     # Place enemies
     num_enemies = int(len(walkable_tiles) * 0.03)
-    random_placement(output, num_enemies, 'E')
-    
+    walkable_tiles = random_placement(output, walkable_tiles, height, width, num_enemies, 'E')
+    print("Walkable tiles", len(walkable_tiles))
     # Place weapons
     num_weapons = random.randint(1, 5)
-    random_placement(output, num_weapons, 'W')
-
+    walkable_tiles = random_placement(output, walkable_tiles, height, width, num_weapons, 'W')
+    print("Walkable tiles", len(walkable_tiles))
     # Place ammo 
     num_ammo = int(len(walkable_tiles) * 0.01)
-    random_placement(output, num_ammo, 'A')
-
+    walkable_tiles = random_placement(output, walkable_tiles, height, width, num_ammo, 'A')
+    print("Walkable tiles", len(walkable_tiles))
     # Place health packs
     num_health = int(len(walkable_tiles) * 0.03)
-    random_placement(output, num_health, 'H')
-
+    walkable_tiles = random_placement(output, walkable_tiles, height, width, num_health, 'H')
+    print("Walkable tiles", len(walkable_tiles))
     # Place explosives
     num_explosives = random.randint(0, 10)
-    random_placement(output, num_explosives, 'B')
-
+    walkable_tiles = random_placement(output, walkable_tiles, height, width, num_explosives, 'B')
+    print("Walkable tiles", len(walkable_tiles))
     # Place decoration
     num_decoration = int(len(walkable_tiles) * 0.01)
-    random_placement(output, num_decoration, ':')
+    walkable_tiles = random_placement(output, walkable_tiles, height, width, num_decoration, ':')
+    print("Walkable tiles", len(walkable_tiles))
 
 
-    
-
-def find_furthest_walkable_pair(output):
+def find_furthest_walkable_pair(output, walkable, height, width):
     """
     Find the two furthest walkable tiles ('.') in the output grid.
     Returns their coordinates and the distance between them.
     """
-    height, width = len(output), len(output[0])
-    # Find all walkable tiles
-    walkable = [(y, x) for y in range(height) for x in range(width) if output[y][x] == '.']
-
     max_pair = None
     max_dist = -1
     
@@ -71,13 +65,13 @@ def find_furthest_walkable_pair(output):
     return max_pair
 
 
-def place_start_and_exit(output):
+def place_start_and_exit(output, walkable_tiles, height, width):
     """
     Place start ('<') and exit ('>') markers on the output grid.
     The start marker is placed at the furthest walkable tile from the exit marker.
     """
 
-    result = find_furthest_walkable_pair(output)
+    result = find_furthest_walkable_pair(output, walkable_tiles, height, width)
     if result:
         (y1, x1), (y2, x2), _ = result
     output[y1][x1] = '<'
@@ -93,14 +87,11 @@ def place_start_and_exit(output):
     output[y2][x2] = '>'
 
    
-def random_placement(output, num_items, output_char):
+def random_placement(output, walkable_tiles, height, width, num_items, output_char):
     """
     Place item on the output grid based on the specified enemy ratio.
     """
-    height, width = len(output), len(output[0])
-    walkable_tiles = [(y, x) for y in range(height) for x in range(width) if output[y][x] == '.']
-    
-    
+       
     for i in range(num_items):
         y, x = random.choice(walkable_tiles)
         output[y][x] = output_char
@@ -114,3 +105,5 @@ def random_placement(output, num_items, output_char):
                             walkable_tiles.remove((ny, nx))  # Remove adjacent tile from walkable list
         except:
             pass
+
+    return walkable_tiles
