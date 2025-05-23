@@ -1,21 +1,31 @@
 import struct
 
 
-class Lump:
+class LumpBuilder:
     def __init__(self):
         self.entries = []
 
+    def add_entry(self, entry):
+        self.entries.append(entry)
 
-    def build_lump(self, lump_type, data):
+    def pack_lump(self):
         lump = b""
         for entry in self.entries:
-            if isinstance(entry, lump_type):
-                lump += entry.pack_data()
+            lump += entry.pack_data()
         return lump
+
 
 ################
 # Lump entries #
 ################
+
+class Empty:
+    def __init__(self):
+        pass
+
+    def pack_data(self):
+        return b""
+
 
 class Thing:
     def __init__(self, x, y, angle, thing_type, flags):
@@ -98,7 +108,7 @@ class Linedef:
         self.sidedef2 = sidedef2
 
     def pack_data(self):
-        return struct.pack("<hhhhhhh", self.v1, self.v2, self.flags, self.type, self.tag, self.sidedef1, self.sidedef2)
+        return struct.pack("<hhhhhhH", self.v1, self.v2, self.flags, self.type, self.tag, self.sidedef1, self.sidedef2)
 
 
 class Sidedef:
@@ -123,11 +133,11 @@ class Sidedef:
 
     def pack_data(self):
         # Pack the texture names as 8-byte strings
-        upper_texture_bytes = self.upper_texture.encode('ascii').ljust(8, b'\x00')
-        lower_texture_bytes = self.lower_texture.encode('ascii').ljust(8, b'\x00')
-        middle_texture_bytes = self.middle_texture.encode('ascii').ljust(8, b'\x00')
+        # upper_texture_bytes = self.upper_texture.encode('ascii').ljust(8, b'\x00')
+        # lower_texture_bytes = self.lower_texture.encode('ascii').ljust(8, b'\x00')
+        # middle_texture_bytes = self.middle_texture.encode('ascii').ljust(8, b'\x00')
 
-        return struct.pack("<hh8s8s8sh", self.x_offset, self.y_offset, upper_texture_bytes, lower_texture_bytes, middle_texture_bytes, self.sector)
+        return struct.pack("<hh8s8s8sh", self.x_offset, self.y_offset, self.upper_texture, self.lower_texture, self.middle_texture, self.sector)
 
 
 class Sector:
@@ -154,7 +164,7 @@ class Sector:
 
     def pack_data(self):
         # Pack the texture names as 8-byte strings
-        floor_texture_bytes = self.floor_texture.encode('ascii').ljust(8, b'\x00')
-        ceiling_texture_bytes = self.ceiling_texture.encode('ascii').ljust(8, b'\x00')
+        # floor_texture_bytes = self.floor_texture.encode('ascii').ljust(8, b'\x00')
+        # ceiling_texture_bytes = self.ceiling_texture.encode('ascii').ljust(8, b'\x00')
 
-        return struct.pack("<hh8s8shhh", self.floor_height, self.ceiling_height, floor_texture_bytes, ceiling_texture_bytes, self.light_level, self.special_type, self.tag)
+        return struct.pack("<hh8s8shhh", self.floor_height, self.ceiling_height, self.floor_texture, self.ceiling_texture, self.light_level, self.special_type, self.tag)

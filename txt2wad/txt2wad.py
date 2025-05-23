@@ -141,7 +141,7 @@ def build_vertices_and_linedefs(edges):
             vertex_list.append(scaled)
         return vertices[scaled]
 
-    for (v1, v2) in edges:
+    for i, (v1, v2) in enumerate(edges):
         i1 = get_vertex_index(v1)
         i2 = get_vertex_index(v2)
         linedefs.append((i1, i2))
@@ -189,6 +189,7 @@ def build_linedefs_lump(linedefs):
     """
     lump = b""
     for i, (v1, v2) in enumerate(linedefs):
+        print(v1, v2)
         flags = 0
         line_type = 0
         sector_tag = 0

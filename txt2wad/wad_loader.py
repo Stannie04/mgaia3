@@ -26,12 +26,12 @@ def get_action(keybinds):
             action = [a or b for a, b in zip(action, mapping)]
     return action
 
-def init_game():
+def init_game(filename):
     game = vzd.DoomGame()
 
     # game.set_doom_game_path("data/doom.wad")
     # game.set_doom_scenario_path("data/E1M1.wad")
-    game.set_doom_scenario_path('data/test.wad')
+    game.set_doom_scenario_path(filename)
     game.set_screen_resolution(vzd.ScreenResolution.RES_640X480)
     game.set_screen_format(vzd.ScreenFormat.RGB24)
     game.set_render_hud(True)
@@ -65,7 +65,7 @@ def run_episode(game, keybinds):
 
         clock.tick(35)
 
-def main():
+def main(filename):
     keybinds = {
         pygame.K_LEFT: [1, 0, 0, 0, 0, 0, 0, 0],  # TURN_LEFT
         pygame.K_RIGHT: [0, 1, 0, 0, 0, 0, 0, 0],  # TURN_RIGHT
@@ -78,7 +78,7 @@ def main():
     }
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
-    game = init_game()
+    game = init_game(filename)
     run_episode(game, keybinds)
     game.close()
     pygame.quit()
