@@ -15,11 +15,6 @@ def txt2image(data):
     """
     Converts .txt dataframe files to be used for metric computation or visualisation.
     """
-    # tiles = {
-    #     '.': (255),  # floor
-    #     'X': (128),  # walls
-    #     '-': (0),  # out of bounds
-    # }
     tiles = {'.': (255,255,255), 'X': (128,128,128),
             '-': (0,0,0), '?': (60,60,60), '<':(50,205,50),
             '>': (65,105,225), 'E': (153,0,0), 'W': (29,39,57), 
@@ -100,6 +95,14 @@ def count_corners(img):
 
     floor_tiles = len(img[img == '.'])
     return corners/floor_tiles  # normalise
+
+def count_items(img):
+    """
+    Normalise the number of spawned items by the number of floor tiles.
+    """
+    items = img[img == 'W' or img == 'A' or img == 'H' or img == 'B' or img == ':']
+    floor_tiles = len(img[img == '.'])
+    return items/floor_tiles  # normalise
 
 def count_enemies(img):
     """
