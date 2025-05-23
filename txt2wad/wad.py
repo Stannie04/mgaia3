@@ -1,8 +1,10 @@
 import struct
 from lump_entries import *
+import random
+
 
 class WAD:
-    def __init__(self, filename, scale):
+    def __init__(self, filename, scale, texture_pallets):
         self.lumps = {
             "MAP01": LumpBuilder(),
             "THINGS": LumpBuilder(),
@@ -56,6 +58,21 @@ class WAD:
         self.build_vertices_and_linedefs()
         self.extract_things()
 
+        self.textures = self.pick_pallet(texture_pallets)
+
+    @staticmethod
+    def pick_pallet(texture_dict):
+        map_name, all_textures = random.choice(list(texture_dict.items()))
+
+        wall_textures_up = random.choice(all_textures["Textures"])
+        wall_text_low = wall_mid = wall_textures_up
+
+        floor_textures = random.choice(all_textures["Flats"])
+        roof_textures = random.choice(all_textures["Flats"])
+        # breakpoint()
+        return {"wall_up": wall_textures_up, "wall_mid": wall_mid, "wall_low": wall_text_low,
+                "floor": floor_textures, "roof": roof_textures}
+
 
     def build_wad(self, output_filename):
         # Add missing lump data
@@ -106,10 +123,14 @@ class WAD:
         """Put the entire map in a single sector."""
         floor_height = 0
         ceiling_height = 128  # arbitrary
-        floor_tex = b"FLOOR1\0"  # 8 bytes, padded with zeros if necessary
+        # floor_tex = b"FLOOR1\0"  # 8 bytes, padded with zeros if necessary
+        floor_tex = self.textures["floor"].encode("utf-8")
+        breakpoint()
         if len(floor_tex) < 8:
             floor_tex = floor_tex.ljust(8, b'\0')
-        ceiling_tex = b"CEIL1\0\0"
+        # ceiling_tex = b"CEIL1\0\0"
+        ceiling_tex = self.textures["roof"].encode("utf-8")
+
         if len(ceiling_tex) < 8:
             ceiling_tex = ceiling_tex.ljust(8, b'\0')
         light = 160
@@ -120,7 +141,8 @@ class WAD:
     def build_sidedefs(self):
         n_sidedefs = len(self.lumps["LINEDEFS"].entries)
 
-        up, low, mid = b"NULL____", b"NULL____", b"NULL____"
+        # up, low, mid = b"NULL____", b"NULL____", b"NULL____"
+        up, low, mid = self.textures["wall_up"].encode("utf-8"), self.textures["wall_low"].encode("utf-8"), self.textures["wall_mid"].encode("utf-8")
         for i in range(n_sidedefs):
             self.lumps["SIDEDEFS"].add_entry(Sidedef(0, 0, up, low, mid, 0))
 
