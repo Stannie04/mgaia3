@@ -117,7 +117,7 @@ if __name__ == "__main__":
     # test whether entropy of image is computed
     img_txt = process_txt("../WFCGenerator/generated_maps/generated_map.txt")
     img = txt2image(img_txt)
-    img_orig_txt = process_txt("../WFCGenerator/training_maps/training_map_1.txt")
+    img_orig_txt = process_txt("../WFCGenerator/training_maps_old/training_map_1.txt")
     img_orig = txt2image(img_orig_txt)
 
     entropy = pixel_entropy(img)
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
     # test finding entropy metric of all txt files
     H_gen = categorical_entropy("../WFCGenerator/generated_maps")  # generated maps
-    H_orig = categorical_entropy("../WFCGenerator/training_maps")  # existing maps
+    H_orig = categorical_entropy("../WFCGenerator/training_maps_old")  # existing maps
 
     entropy_metric = abs(H_gen - H_orig)
     print(f"Delta Entropy metric = {entropy_metric}")
