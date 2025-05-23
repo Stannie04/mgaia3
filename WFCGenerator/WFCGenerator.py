@@ -113,13 +113,13 @@ def run_wfc(training_map, N, map_size):
     save_output(output)
 
 
-def call_wfc(traning_map_path="training_maps/training_map_1.txt", save_path="generated_maps/generated_map.txt", N=3, map_size=(40,40)):
+def call_wfc(training_map_path="training_map", save_path="generated_maps/generated_map.txt", N=3, map_size=(40,40)):
     """
     Call function to run WFC with specified parameters.
     Used for running the entire program in one go.
     """
-    training_map = load_map(traning_map_path)
-    # training_map = load_all_maps(traning_map_path)
+    # training_map = load_map(training_map_path)
+    training_map = load_all_maps(training_map_path)
 
     patterns = extract_patterns(training_map, N)
     catalog, weights = build_pattern_catalog(patterns)
@@ -146,8 +146,8 @@ if __name__ == "__main__":
     parser.add_argument('--visualize', action='store_true', help="Enable visualization")
     args = parser.parse_args()
 
-    training_map = load_map("training_maps/training_map_3.txt")
-    # training_map = load_all_maps("../data/all_txt_files")
+    # training_map = load_map("training_maps/training_map_3.txt")
+    training_map = load_all_maps("training_map")
 
     N = 3
     MAX_MAP_SIZE = 150
