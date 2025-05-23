@@ -39,8 +39,20 @@ def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_win
         screen = pygame.display.set_mode((grid_width + legend_width, grid_height))
         ui = UI(screen, grid_width, grid_height, cell_size, legend_width,
                 (map_width, map_height), N, MAX_MAP_SIZE)
-        colors = {'.': (255,255,255), 'X': (128,128,128),
-                  '-': (0,0,0), '?': (60,60,60), '<':(50,205,50), '>': (65,105,225), 'E': (153,0,0), 'W': (29,39,57), 'A': (255,255,153), 'H': (255,192,203), 'B': (255,165,0), ':': (230,230,250)}
+        colors = {
+            '.': (255,255,255), # floor
+            'X': (128,128,128), # wall
+            '-': (0,0,0), # out-of-bounds
+            '?': (60,60,60), # unknown
+            '<':(50,205,50), # start
+            '>': (65,105,225), # exit
+            'E': (153,0,0), # enemy
+            'W': (29,39,57), # weapoon
+            'A': (255,255,153), # ammo
+            'H': (255,192,203), # health
+            'B': (255,165,0), # explosive barrel
+            ':': (230,230,250) # decorative
+        }
         clock = pygame.time.Clock()
 
         restart_ui = False
@@ -134,7 +146,7 @@ if __name__ == "__main__":
     parser.add_argument('--visualize', action='store_true', help="Enable visualization")
     args = parser.parse_args()
 
-    training_map = load_map("training_maps/training_map_1.txt")
+    training_map = load_map("training_maps/training_map_3.txt")
     # training_map = load_all_maps("../data/all_txt_files")
 
     N = 3
