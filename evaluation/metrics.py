@@ -3,6 +3,18 @@ import pandas as pd
 import skimage.measure
 import os
 
+from dill import objects
+
+
+items = ["A", "K", "t", "B", "H"]
+enemies = ["E"]
+healths = ["H"]
+walkebles = [".", ",", ":", "T", "t", "<", ">", "+", "L"]
+# # Add otehr arrays to walbles  since thee are still walkabel tiles
+# walkebles.append(items)
+# walkebles.append(enemies)
+# walkebles.append(healths)
+
 def process_txt(path):
     """
     Convert .txt to dataframe.
@@ -92,32 +104,72 @@ def count_corners(img):
             for angle in range(4):  # rotate window to detect all corner variations
                 new_square = rotate(square, angle)
                 corners += detect_corner(new_square)
+    return corners/count_floor(img)  # normalise
 
-    floor_tiles = len(img[img == '.'])
-    return corners/floor_tiles  # normalise
+def item_distribution(img):
+    # Calculate
+    img = np.array(img)
+    # calculate_relation
+    relation = count_items(img)
+    relation_E = count_enemies(img)
+    relation_EF= count_enemies_to_floor(img)
+    relation_HE = count_health_to_enemy(img)
+    # f"M^2 %s \n items %s", m_sq, objectives,
+    print(
+            f"Enemies to m²: {relation_EF}%\n"
+            f"Enemies in a Map: {relation_E}\n"
+            f"Healths in relation to enemies: {relation_HE}\n"
+            # f"keys: {relation_p}, {doors}"%\n"
+            f"Items per m²: {relation}\n")
+
+def count_floor(img):
+    """
+    Calculate the walkable m² over the map  and use this to normalize all other items
+    """
+    floor_mask = np.isin(img,walkebles)
+    floor_tiles = np.sum(floor_mask)
+    return floor_tiles
 
 def count_items(img):
     """
     Normalise the number of spawned items by the number of floor tiles.
     """
-    items = img[img == 'W' or img == 'A' or img == 'H' or img == 'B' or img == ':']
-    floor_tiles = len(img[img == '.'])
-    return items/floor_tiles  # normalise
+    item_mask = np.isin(img, items)
+    item_tiles = np.sum(item_mask)
+    return item_tiles/count_floor(img)  # normalise
 
-def count_enemies(img):
+def count_enemies_to_floor(img):
     """
     Normalise the number of enemies by the number of floor tiles.
     """
-    enemies = img[img == 'E']
-    floor_tiles = len(img[img == '.'])
-    return enemies/floor_tiles  # normalise
+    enemy_mask =  np.isin(img, enemies)
+    enemy_tile = np.sum(enemy_mask)
+    return enemy_tile/count_floor(img)  # normalise
+
+def count_enemies(img):
+    """
+    Count the  amount of enemies in a  map
+    """
+    enemy_mask =  np.isin(img, enemies)
+    enemy_tile = np.sum(enemy_mask)
+    return enemy_tile  # Not normalised
+
+
+def count_health_to_enemy(img):
+    """
+        Normalise the number of hearts by the number of floor tiles.
+        """
+    health_mask= np.isin(img, healths)
+    health_tile = np.sum(health_mask)
+    relation_HE = health_tile/count_enemies(img)
+    return relation_HE
 
 if __name__ == "__main__":
 
     # test whether entropy of image is computed
     img_txt = process_txt("../WFCGenerator/generated_maps/generated_map.txt")
     img = txt2image(img_txt)
-    img_orig_txt = process_txt("../WFCGenerator/training_maps_old/training_map_1.txt")
+    img_orig_txt = process_txt("../WFCGenerator/training_map/E2M2.txt")
     img_orig = txt2image(img_orig_txt)
 
     entropy = pixel_entropy(img)
@@ -132,7 +184,15 @@ if __name__ == "__main__":
 
     corners_gen = count_corners(img_txt)
     corners_orig = count_corners(img_orig_txt)
-    print(corners_gen)
-    print(corners_orig)
 
+    print("Corners per m² Generated map: ", corners_gen)
+    print("Corners per m² Original map: ", corners_orig)
+
+    print("Item distribution over maps")
+    print("Generated map")
+    item_distribution(img_txt)
+    #DOes not have items so  shoudl  be 0 and nan alike
+    print("Original Map")
+    item_distribution(img_orig_txt)
+    # SHould have items
     # aantal doodlopende gangen
