@@ -140,7 +140,7 @@ def item_distribution(img):
             f"Game Mode recommended: {game_mode}\n"
             # f"keys: {relation_p}, {doors}"%\n"
             f"Items per m²: {relation}\n")
-    return relation_EF, relation_E, relation_HE, relation,relation_AE,game_mode
+    return relation_EF, relation_E, relation_HE, relation, relation_AE, game_mode
 
 def count_floor(img):
     """
@@ -198,19 +198,21 @@ def classify_difficulty(img):
         if distribution <= mode:
             game_mode = name
             continue
-        break #  Break instantly when the distribution is  higher than the possibel game modes
+        break #  Break instantly when the distribution is higher than the possible game modes
     return game_mode
 
 def call_metrics(generated_maps_folder, original_maps_folder):
 
-    n_metrics = 4
+    n_metrics = 6  # number of metrics
+    # Generated and 
     gen_files = os.listdir(generated_maps_folder)
     orig_files = os.listdir(original_maps_folder)
     paths = [generated_maps_folder, original_maps_folder]
     gen_metrics = np.zeros((2, len(orig_files), n_metrics))
+    game_modes = {"Tutorial":0, "Easy":1, "Normal":2, "Hard":3}
 
     for d, dist in enumerate([gen_files, orig_files]):
-        for i, file in enumerate(dist):
+        for i, file in enumerate(dist[2:]):  # taking only test images
             file_path = os.path.join(paths[d], file)
 
             img_txt = process_txt(file_path)
@@ -219,20 +221,22 @@ def call_metrics(generated_maps_folder, original_maps_folder):
             corners_gen = count_corners(img_txt)  # compute number of corners
             gen_metrics[d, i, 0] = corners_gen
 
-            relation_EF, relation_E, relation_HE, relation = item_distribution(img_txt)
-            gen_metrics[d, i, 1] = relation_EF
-            gen_metrics[d, i, 2] = relation_HE
-            gen_metrics[d, i, 3] = relation
+            relation_EF, relation_E, relation_HE, relation, relation_AE, game_mode = item_distribution(img_txt)
+            gen_metrics[d, i, 1] = relation_EF  # enemies/m2
+            gen_metrics[d, i, 2] = relation_HE  # health/enemy
+            gen_metrics[d, i, 3] = relation  #  items/m2
+            gen_metrics[d, i, 4] = relation_AE  # ammunition/enemy
+            gen_metrics[d, i, 5] = game_modes[game_mode]  # recommended game mode
 
     H_gen = categorical_entropy(generated_maps_folder)  # generated maps
     H_orig = categorical_entropy(original_maps_folder)  # existing maps
     entropy_metric = abs(H_gen - H_orig)
-    print(f"Delta Entropy metric = {entropy_metric}")
+    print(f"Delta Entropy metric (structural similarity) = {entropy_metric}")
 
     corners_gen = np.mean(gen_metrics[0,:,0])
     corners_orig = np.mean(gen_metrics[1,:,0])
     corners_metric = (corners_gen - corners_orig)
-    print(f"Difference in corners = {corners_metric}")
+    print(f"Difference in corners (smoothness) = {corners_metric}")
 
     enemies_gen = np.mean(gen_metrics[0,:,1])
     enemies_orig = np.mean(gen_metrics[1,:,1])
@@ -242,14 +246,19 @@ def call_metrics(generated_maps_folder, original_maps_folder):
     health_gen = np.mean(gen_metrics[0,:,2])
     health_orig = np.mean(gen_metrics[1,:,2])
     health_metric = (health_gen - health_orig)
-    print(f"Difference in health = {health_metric}")
+    print(f"Difference in survivability = {health_metric}")
 
-    survive_gen = np.mean(gen_metrics[0,:,3])
-    survive_orig = np.mean(gen_metrics[1,:,3])
-    survive_metric = (survive_gen - survive_orig)
-    print(f"Difference in survivability = {survive_metric}")
+    item_gen = np.mean(gen_metrics[0,:,3])
+    item_orig = np.mean(gen_metrics[1,:,3])
+    item_metric = (item_gen - item_orig)
+    print(f"Difference in iteractability = {item_metric}")
 
-    return entropy_metric, corners_metric, enemies_metric, health_metric, survive_metric
+    ammo_gen = np.mean(gen_metrics[0,:,4])
+    ammo_orig = np.mean(gen_metrics[1,:,4])
+    ammo_metric = (ammo_gen - ammo_orig)
+    print(f"Difference in killability = {ammo_metric}")
+
+    return entropy_metric, corners_metric, enemies_metric, health_metric, item_metric, ammo_metric
 
 if __name__ == "__main__":
 
