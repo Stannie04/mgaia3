@@ -38,6 +38,7 @@ def init_game(filename):
     game.set_render_crosshair(True)
     game.set_render_weapon(True)
     game.set_render_decals(True)
+    game.set_window_visible(False)
 
     game.add_available_button(vzd.Button.TURN_LEFT)
     game.add_available_button(vzd.Button.TURN_RIGHT)
@@ -48,12 +49,13 @@ def init_game(filename):
     game.add_available_button(vzd.Button.ATTACK)
     game.add_available_button(vzd.Button.USE)
 
+
     game.set_mode(vzd.Mode.ASYNC_PLAYER)
     game.init()
 
     return game
 
-def run_episode(game, keybinds):
+def run_episode(game, keybinds, screen):
     running = True
     clock = pygame.time.Clock()
     while running and not game.is_episode_finished():
@@ -62,6 +64,11 @@ def run_episode(game, keybinds):
                 running = False
 
         game.make_action(get_action(keybinds))
+
+        frame = game.get_state().screen_buffer
+        surface = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+        screen.blit(surface, (0, 0))
+        pygame.display.flip()
 
         clock.tick(35)
 
@@ -79,7 +86,8 @@ def main(filename):
     pygame.init()
     screen = pygame.display.set_mode((640, 480))
     game = init_game(filename)
-    run_episode(game, keybinds)
+
+    run_episode(game, keybinds, screen)
     game.close()
     pygame.quit()
 

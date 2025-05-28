@@ -4,7 +4,7 @@ import random
 
 
 class WAD:
-    def __init__(self, filename, scale, texture_pallets):
+    def __init__(self, filename, scale, texture_palettes):
         self.lumps = {
             "MAP01": LumpBuilder(),
             "THINGS": LumpBuilder(),
@@ -58,10 +58,10 @@ class WAD:
         self.build_vertices_and_linedefs()
         self.extract_things()
 
-        self.textures = self.pick_pallet(texture_pallets)
+        self.textures = self.pick_palette(texture_palettes)
 
     @staticmethod
-    def pick_pallet(texture_dict):
+    def pick_palette(texture_dict):
         map_name, all_textures = random.choice(list(texture_dict.items()))
 
         wall_textures_up = random.choice(all_textures["Textures"])
@@ -125,7 +125,6 @@ class WAD:
         ceiling_height = 128  # arbitrary
         # floor_tex = b"FLOOR1\0"  # 8 bytes, padded with zeros if necessary
         floor_tex = self.textures["floor"].encode("utf-8")
-        breakpoint()
         if len(floor_tex) < 8:
             floor_tex = floor_tex.ljust(8, b'\0')
         # ceiling_tex = b"CEIL1\0\0"
@@ -133,10 +132,11 @@ class WAD:
 
         if len(ceiling_tex) < 8:
             ceiling_tex = ceiling_tex.ljust(8, b'\0')
-        light = 160
+        light = 200
         special = 0
         tag = 0
         self.lumps["SECTORS"].add_entry(Sector(floor_height, ceiling_height, floor_tex, ceiling_tex, light, special, tag))
+
 
     def build_sidedefs(self):
         n_sidedefs = len(self.lumps["LINEDEFS"].entries)
@@ -145,6 +145,7 @@ class WAD:
         up, low, mid = self.textures["wall_up"].encode("utf-8"), self.textures["wall_low"].encode("utf-8"), self.textures["wall_mid"].encode("utf-8")
         for i in range(n_sidedefs):
             self.lumps["SIDEDEFS"].add_entry(Sidedef(0, 0, up, low, mid, 0))
+            # self.lumps["SIDEDEFS"].add_entry(Sidedef(0, 0, up, low, mid, 0))
 
     ##########################
     # Text parsing functions #
@@ -177,13 +178,16 @@ class WAD:
                     thing_x = int((x + 0.5) * self.scale)
                     thing_y = int((y + 0.5) * self.scale)
                     thing_type = self.thing_types[cell]
-                    self.lumps["THINGS"].add_entry((Thing(thing_x, thing_y, 0, thing_type, 7)))
+
+                    # Flag 7 (0111): Thing exists on all skill levels
+                    self.lumps["THINGS"].add_entry((Thing(x=thing_x, y=thing_y, angle=0, thing_type=thing_type, flags=7)))
 
 
-    def add_edge(self, v1, v2):
+    def add_edge(self, v1, v2, exit):
         # Order the two endpoints (as tuples) so that duplicate edges aren’t added.
-        edge = tuple(sorted((v1, v2)))
-        self.edges.add(edge)
+        edge = (v1, v2, exit)
+        if edge not in self.edges:
+            self.edges.add(edge)
 
 
     def extract_geometry(self):
@@ -201,24 +205,25 @@ class WAD:
         for y in range(height):
             for x in range(width):
                 cell = self.grid[y][x]
+                exit = True if cell == 16 else False
                 if cell in self.walls:
                     # Check top edge: if above cell is missing or not a wall.
                     if y == 0 or self.grid[y - 1][x] not in self.walls:
-                        self.add_edge((x, y), (x + 1, y))
+                        self.add_edge((x, y), (x + 1, y), exit)
                     # Check bottom edge
                     if y == height - 1 or self.grid[y + 1][x] not in self.walls:
-                        self.add_edge((x, y + 1), (x + 1, y + 1))
+                        self.add_edge( (x + 1, y + 1), (x, y + 1), exit)
                     # Check left edge
                     if x == 0 or self.grid[y][x - 1] not in self.walls:
-                        self.add_edge((x, y), (x, y + 1))
+                        self.add_edge( (x, y + 1), (x, y), exit) #
                     # Check right edge
                     if x == width - 1 or self.grid[y][x + 1] not in self.walls:
-                        self.add_edge( (x + 1, y), (x + 1, y + 1))
+                        self.add_edge( (x + 1, y), (x + 1, y + 1), exit)
 
 
-    def get_vertex_index(self, pt):
+    def get_vertex_index(self, vertex):
         # Scale the point
-        scaled = (int(pt[0] * self.scale), int(pt[1] * self.scale))
+        scaled = (int(vertex[0] * self.scale), int(vertex[1] * self.scale))
         if scaled not in self.vertices_set:
             self.vertices_set[scaled] = len(self.lumps["VERTEXES"].entries)
             self.lumps["VERTEXES"].add_entry(Vertex(scaled[0], scaled[1]))
@@ -236,10 +241,11 @@ class WAD:
 
         # assign an index to a vertex; vertices are defined by (x, y) coordinates.
 
-        for i, (v1, v2) in enumerate(self.edges):
+        for i, (v1, v2, exit) in enumerate(self.edges):
             i1 = self.get_vertex_index(v1)
             i2 = self.get_vertex_index(v2)
 
-            # Add the linedef both ways to ensure twosidedness.
-            self.lumps["LINEDEFS"].add_entry(Linedef(i1, i2, 0, 0, 0, i, 0xFFFF))
-            self.lumps["LINEDEFS"].add_entry(Linedef(i2, i1, 0, 0, 0, i, 0xFFFF))
+            # Flag 7 (0111): Two-sided, blocks players and monsters
+            special = 11 if exit else 0
+            self.lumps["LINEDEFS"].add_entry(Linedef(v1=i1, v2=i2, flags=1, special=special, tag=0, sidedef1=i, sidedef2=0xFFFF))
+            # self.lumps["LINEDEFS"].add_entry(Linedef(v1=i2, v2=i1, flags=1, special=special, tag=0, sidedef1=i, sidedef2=0XFFFF))

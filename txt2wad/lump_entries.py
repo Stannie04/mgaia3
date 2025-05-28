@@ -73,14 +73,14 @@ class Vertex:
 
 
 class Linedef:
-    def __init__(self, v1, v2, flags, linedef_type, tag, sidedef1, sidedef2):
+    def __init__(self, v1, v2, flags, special, tag, sidedef1, sidedef2):
         """Build a Linedef object.
 
         Each entry is 14 bytes long:
         - v1: int16_t starting vertex (x,y), 2 bytes
         - v2: int16_t ending vertex (x,y), 2 bytes
         - flags: int16_t flags, 2 bytes
-        - type: int16_t type, 2 bytes
+        - special: int16_t type, 2 bytes
         - tag: int16_t tag, 2 bytes
         - sidedef1: int16_t front sidedef, 2 bytes
         - sidedef2: int16_t back sidedef, 2 bytes
@@ -102,13 +102,13 @@ class Linedef:
         self.v1 = v1
         self.v2 = v2
         self.flags = flags
-        self.type = linedef_type
+        self.special = special
         self.tag = tag
         self.sidedef1 = sidedef1
         self.sidedef2 = sidedef2
 
     def pack_data(self):
-        return struct.pack("<hhhhhhH", self.v1, self.v2, self.flags, self.type, self.tag, self.sidedef1, self.sidedef2)
+        return struct.pack("<hhhhhhH", self.v1, self.v2, self.flags, self.special, self.tag, self.sidedef1, self.sidedef2)
 
 
 class Sidedef:
