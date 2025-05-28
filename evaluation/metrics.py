@@ -8,6 +8,8 @@ ITEMS = ["A", "K", "t", "B", "H"]
 ENEMIES = ["E"]
 AMMUNITION = ["A"]
 HEALTHS = ["H"]
+MININUM_HEALTH_PACKS =0.8
+
 WALKABLES = [".", ",", ":", "T", "t", "<", ">", "+", "L"]
 # # Add otehr arrays to walbles  since thee are still walkabel tiles
 WALKABLES_EXTEND = WALKABLES.copy()
@@ -123,6 +125,7 @@ def item_distribution(img):
     relation_E = count_enemies(img)
     relation_EF= count_enemies_to_floor(img)
     relation_HE = count_health_to_enemy(img)
+    healthpack_mode = relation_HE > MININUM_HEALTH_PACKS
     relation_AE = count_ammu_to_enemy(img)
     game_mode = classify_difficulty(img)
 
@@ -131,6 +134,8 @@ def item_distribution(img):
             f"Enemies to m²: {relation_EF}%\n"
             f"Enemies in a Map: {relation_E}\n"
             f"Healths in relation to enemies: {relation_HE}\n"
+            f"Enough health packs: {healthpack_mode}\n"
+            
             f"Ammunition in relation to enemies: {relation_AE}\n"
             f"Game Mode recommended: {game_mode}\n"
             # f"keys: {relation_p}, {doors}"%\n"
