@@ -1,5 +1,6 @@
 import struct
 import random
+import re
 
 try:
     from .lump_entries import *
@@ -73,9 +74,13 @@ class WAD:
 
         floor_textures = random.choice(all_textures["Flats"])
         roof_textures = random.choice(all_textures["Flats"])
-        # breakpoint()
+        # exit_tex = "SW1STON1"
+        regex = re.compile("SW1.*")
+        switches = list(filter(regex.match, all_textures["Textures"]))
+
+        exit_tex = random.choice(switches)
         return {"wall_up": wall_textures_up, "wall_mid": wall_mid, "wall_low": wall_text_low,
-                "floor": floor_textures, "roof": roof_textures}
+                "floor": floor_textures, "roof": roof_textures, "exit":exit_tex}
 
 
     def build_wad(self, output_filename):
@@ -143,6 +148,10 @@ class WAD:
 
 
     def build_sidedefs(self):
+        # First build sidedef 0 for the exit
+        ex = self.textures["exit"].encode("utf-8")
+        self.lumps["SIDEDEFS"].add_entry(Sidedef(0, 0, self.textures["wall_up"].encode("utf-8"), self.textures["wall_up"].encode("utf-8"),ex, 0))
+
         n_sidedefs = len(self.lumps["LINEDEFS"].entries)
 
         # up, low, mid = b"NULL____", b"NULL____", b"NULL____"
@@ -250,4 +259,5 @@ class WAD:
 
             # Flag 7 (0111): Two-sided, blocks players and monsters
             special = 11 if exit else 0
-            self.lumps["LINEDEFS"].add_entry(Linedef(v1=i1, v2=i2, flags=1, special=special, tag=0, sidedef1=i, sidedef2=0xFFFF))
+            sidedef = 0 if exit else (i+1)
+            self.lumps["LINEDEFS"].add_entry(Linedef(v1=i1, v2=i2, flags=1, special=special, tag=0, sidedef1=sidedef, sidedef2=0xFFFF))
