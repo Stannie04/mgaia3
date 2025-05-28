@@ -69,7 +69,18 @@ class WAD:
     def pick_palette(texture_dict):
         map_name, all_textures = random.choice(list(texture_dict.items()))
 
-        wall_textures_up = random.choice(all_textures["Textures"])
+        # Get all button textures
+        regex_button = re.compile("SW(1|2).*")
+        all_buttons = list(filter(regex_button.match, all_textures["Textures"]))
+
+        # Get all exit sign textures
+        exit_style = re.compile("EXIT.*")
+        all_exit_style = list(filter(exit_style.match, all_textures["Textures"]))
+
+        # Valid wall textures
+        wall_no_buttons = set(all_textures["Textures"]) - set(all_buttons) - set(all_exit_style)
+
+        wall_textures_up = random.choice(list(wall_no_buttons))
         wall_text_low = wall_mid = wall_textures_up
 
         floor_textures = random.choice(all_textures["Flats"])
