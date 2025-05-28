@@ -4,14 +4,25 @@ import skimage.measure
 import os
 
 
-items = ["A", "K", "t", "B", "H"]
-enemies = ["E"]
-healths = ["H"]
-walkebles = [".", ",", ":", "T", "t", "<", ">", "+", "L"]
+ITEMS = ["A", "K", "t", "B", "H"]
+ENEMIES = ["E"]
+AMMUNITION = ["A"]
+HEALTHS = ["H"]
+WALKABLES = [".", ",", ":", "T", "t", "<", ">", "+", "L"]
 # # Add otehr arrays to walbles  since thee are still walkabel tiles
-# walkebles.append(items)
-# walkebles.append(enemies)
-# walkebles.append(healths)
+WALKABLES_EXTEND = WALKABLES.copy()
+WALKABLES_EXTEND.extend(ITEMS)
+WALKABLES_EXTEND.extend(ENEMIES)
+WALKABLES_EXTEND.extend(HEALTHS)
+
+
+#Game modes Ammunition distribution
+EASY = 3.0
+NORMAL = 2.2
+HARD = 1.7
+
+DIFFICULTIES = [("Easy", EASY), ("Normal",NORMAL), ("Hard", HARD)]
+
 
 def process_txt(path):
     """
@@ -112,20 +123,25 @@ def item_distribution(img):
     relation_E = count_enemies(img)
     relation_EF= count_enemies_to_floor(img)
     relation_HE = count_health_to_enemy(img)
+    relation_AE = count_ammu_to_enemy(img)
+    game_mode = classify_difficulty(img)
+
     # f"M^2 %s \n items %s", m_sq, objectives,
-    # print(
-    #         f"Enemies to m²: {relation_EF}%\n"
-    #         f"Enemies in a Map: {relation_E}\n"
-    #         f"Healths in relation to enemies: {relation_HE}\n"
-    #         # f"keys: {relation_p}, {doors}"%\n"
-    #         f"Items per m²: {relation}\n")
-    return relation_EF, relation_E, relation_HE, relation
+    print(
+            f"Enemies to m²: {relation_EF}%\n"
+            f"Enemies in a Map: {relation_E}\n"
+            f"Healths in relation to enemies: {relation_HE}\n"
+            f"Ammunition in relation to enemies: {relation_AE}\n"
+            f"Game Mode recommended: {game_mode}\n"
+            # f"keys: {relation_p}, {doors}"%\n"
+            f"Items per m²: {relation}\n")
+    return relation_EF, relation_E, relation_HE, relation,relation_AE,game_mode
 
 def count_floor(img):
     """
     Calculate the walkable m² over the map  and use this to normalize all other items
     """
-    floor_mask = np.isin(img,walkebles)
+    floor_mask = np.isin(img,WALKABLES_EXTEND)
     floor_tiles = np.sum(floor_mask)
     return floor_tiles
 
@@ -133,7 +149,7 @@ def count_items(img):
     """
     Normalise the number of spawned items by the number of floor tiles.
     """
-    item_mask = np.isin(img, items)
+    item_mask = np.isin(img, ITEMS)
     item_tiles = np.sum(item_mask)
     return item_tiles/count_floor(img)  # normalise
 
@@ -141,7 +157,7 @@ def count_enemies_to_floor(img):
     """
     Normalise the number of enemies by the number of floor tiles.
     """
-    enemy_mask =  np.isin(img, enemies)
+    enemy_mask =  np.isin(img, ENEMIES)
     enemy_tile = np.sum(enemy_mask)
     return enemy_tile/count_floor(img)  # normalise
 
@@ -149,7 +165,7 @@ def count_enemies(img):
     """
     Count the  amount of enemies in a  map
     """
-    enemy_mask =  np.isin(img, enemies)
+    enemy_mask =  np.isin(img, ENEMIES)
     enemy_tile = np.sum(enemy_mask)
     return enemy_tile  # Not normalised
 
@@ -158,10 +174,27 @@ def count_health_to_enemy(img):
     """
     Normalise the number of hearts by the number of floor tiles.
     """
-    health_mask= np.isin(img, healths)
+    health_mask= np.isin(img, HEALTHS)
     health_tile = np.sum(health_mask)
     relation_HE = health_tile/count_enemies(img)
     return relation_HE
+
+def count_ammu_to_enemy(img):
+    ammu_mask = np.isin(img,AMMUNITION)
+    ammu_tile = np.sum(ammu_mask)
+    relation_AE = ammu_tile/count_enemies(img)
+    return relation_AE
+
+def classify_difficulty(img):
+    distribution = count_floor(img)
+    game_mode = "Tutorial"
+    for name, mode in DIFFICULTIES:
+        print(name, mode, distribution)
+        if distribution <= mode:
+            game_mode = name
+            continue
+        break #  Break instantly when the distribution is  higher than the possibel game modes
+    return game_mode
 
 def call_metrics(generated_maps_folder, original_maps_folder):
 
@@ -185,7 +218,7 @@ def call_metrics(generated_maps_folder, original_maps_folder):
             gen_metrics[d, i, 1] = relation_EF
             gen_metrics[d, i, 2] = relation_HE
             gen_metrics[d, i, 3] = relation
-    
+
     H_gen = categorical_entropy(generated_maps_folder)  # generated maps
     H_orig = categorical_entropy(original_maps_folder)  # existing maps
     entropy_metric = abs(H_gen - H_orig)
