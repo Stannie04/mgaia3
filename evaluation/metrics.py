@@ -285,11 +285,20 @@ if __name__ == "__main__":
 
     print("Item distribution over maps")
     print("Generated map")
-    item_distribution(img_txt)
+    relation_EF_GEN, relation_E_GEN, relation_HE_GEN, relation_GEN, relation_AE_GEN, _ = item_distribution(img_txt)
     #DOes not have items so  shoudl  be 0 and nan alike
     print("Original Map")
-    item_distribution(img_orig_txt)
+    relation_EF_ORG, relation_E_ORG, relation_HE_ORG, relation_ORG, relation_AE_ORG, _ = item_distribution(img_orig_txt)
     # SHould have items
+    #Diffreence
+    print("Differences \n "
+          f"Enemies per m²:{abs(relation_EF_ORG - relation_EF_GEN)}\n",
+          f"Enemies per map: {abs(relation_E_ORG - relation_E_GEN)}\n",
+          f"Ammunition to Enemy:{abs(relation_AE_ORG - relation_AE_GEN)}\n"
+          f"Heal per enemy:{abs(relation_HE_ORG - relation_HE_GEN)}\n",
+          f"Items over m²:{abs(relation_ORG - relation_GEN)}\n",
+          )
+
 
     call_metrics("C:/Users/alhst/Documents/AI Master/Modern Game AI Algorithms/A3_DOOM/mgaia3/WFCGenerator/generated_maps",
                  "C:/Users/alhst/Documents/AI Master/Modern Game AI Algorithms/A3_DOOM/mgaia3/WFCGenerator/test_map")
