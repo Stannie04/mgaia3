@@ -7,31 +7,31 @@ def fill_tiles(output):
 
     # Place start and exit markers
     place_start_and_exit(output, walkable_tiles, height, width)
-    print("Walkable tiles", len(walkable_tiles))
+    # print("Walkable tiles", len(walkable_tiles))
     # Place enemies
     num_enemies = int(len(walkable_tiles) * 0.03)
     walkable_tiles = random_placement(output, walkable_tiles, height, width, num_enemies, 'E')
-    print("Walkable tiles", len(walkable_tiles))
+    # print("Walkable tiles", len(walkable_tiles))
     # Place weapons
     num_weapons = random.randint(1, 5)
     walkable_tiles = random_placement(output, walkable_tiles, height, width, num_weapons, 'W')
-    print("Walkable tiles", len(walkable_tiles))
+    # print("Walkable tiles", len(walkable_tiles))
     # Place ammo 
     num_ammo = int(len(walkable_tiles) * 0.01)
     walkable_tiles = random_placement(output, walkable_tiles, height, width, num_ammo, 'A')
-    print("Walkable tiles", len(walkable_tiles))
+    # print("Walkable tiles", len(walkable_tiles))
     # Place health packs
     num_health = int(len(walkable_tiles) * 0.03)
     walkable_tiles = random_placement(output, walkable_tiles, height, width, num_health, 'H')
-    print("Walkable tiles", len(walkable_tiles))
+    # print("Walkable tiles", len(walkable_tiles))
     # Place explosives
     num_explosives = random.randint(0, 10)
     walkable_tiles = random_placement(output, walkable_tiles, height, width, num_explosives, 'B')
-    print("Walkable tiles", len(walkable_tiles))
+    # print("Walkable tiles", len(walkable_tiles))
     # Place decoration
     num_decoration = int(len(walkable_tiles) * 0.01)
     walkable_tiles = random_placement(output, walkable_tiles, height, width, num_decoration, ':')
-    print("Walkable tiles", len(walkable_tiles))
+    # print("Walkable tiles", len(walkable_tiles))
 
 
 def find_furthest_walkable_pair(output, walkable, height, width):

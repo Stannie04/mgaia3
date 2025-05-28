@@ -1,6 +1,10 @@
 import struct
-from lump_entries import *
 import random
+
+try:
+    from .lump_entries import *
+except ImportError:
+    from lump_entries import *
 
 
 class WAD:
@@ -145,7 +149,6 @@ class WAD:
         up, low, mid = self.textures["wall_up"].encode("utf-8"), self.textures["wall_low"].encode("utf-8"), self.textures["wall_mid"].encode("utf-8")
         for i in range(n_sidedefs):
             self.lumps["SIDEDEFS"].add_entry(Sidedef(0, 0, up, low, mid, 0))
-            # self.lumps["SIDEDEFS"].add_entry(Sidedef(0, 0, up, low, mid, 0))
 
     ##########################
     # Text parsing functions #
@@ -248,4 +251,3 @@ class WAD:
             # Flag 7 (0111): Two-sided, blocks players and monsters
             special = 11 if exit else 0
             self.lumps["LINEDEFS"].add_entry(Linedef(v1=i1, v2=i2, flags=1, special=special, tag=0, sidedef1=i, sidedef2=0xFFFF))
-            # self.lumps["LINEDEFS"].add_entry(Linedef(v1=i2, v2=i1, flags=1, special=special, tag=0, sidedef1=i, sidedef2=0XFFFF))
