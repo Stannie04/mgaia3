@@ -194,7 +194,6 @@ def classify_difficulty(img):
     distribution = count_ammu_to_enemy(img)
     game_mode = "Tutorial"
     for name, mode in DIFFICULTIES:
-        print(name, mode, distribution)
         if distribution <= mode:
             game_mode = name
             continue
