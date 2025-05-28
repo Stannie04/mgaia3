@@ -2,12 +2,19 @@ import pygame
 import argparse
 from tqdm import tqdm
 
-from UI import UI
-from WFC import OverlappingWFC
+try:
+    from .UI import UI
+    from .WFC import OverlappingWFC
+    from .helper import *
+    from .repair import repair
+    from .fill_tiles import fill_tiles
+except ImportError:
+    from UI import UI
+    from WFC import OverlappingWFC
+    from helper import *
+    from repair import repair
+    from fill_tiles import fill_tiles
 
-from helper import *
-from repair import repair
-from fill_tiles import fill_tiles
 
 def run_wfc_with_visualization(training_map, N, MAX_MAP_SIZE, map_size, base_window_size):
     """
@@ -97,17 +104,17 @@ def run_wfc(training_map, N, map_size):
     catalog, weights = build_pattern_catalog(patterns)
     tile_adj = compute_tile_adjacency(training_map)
     adjacency = build_adjacency_rules(catalog, tile_adj)
+    
     wfc = OverlappingWFC(map_size[0], map_size[1], catalog, weights, adjacency)
 
-    actual = 0
+    output = None
     with tqdm(total=map_size[0] * map_size[1], desc="Generating map") as pbar:
         while wfc.run_step():
             pbar.update(1)
-            actual += 1
-        pbar.total = actual
+        output = wfc.render()
+        pbar.total = map_size[0] * map_size[1]
         pbar.refresh()
 
-    output = wfc.render()
     repair(output)
     fill_tiles(output)
     save_output(output)
@@ -125,17 +132,17 @@ def call_wfc(training_map_path="training_map", save_path="generated_maps/generat
     catalog, weights = build_pattern_catalog(patterns)
     tile_adj = compute_tile_adjacency(training_map)
     adjacency = build_adjacency_rules(catalog, tile_adj)
+
     wfc = OverlappingWFC(map_size[0], map_size[1], catalog, weights, adjacency)
 
-    actual = 0
+    output = None
     with tqdm(total=map_size[0] * map_size[1], desc="Generating map") as pbar:
         while wfc.run_step():
             pbar.update(1)
-            actual += 1
-        pbar.total = actual
+        output = wfc.render()
+        pbar.total = map_size[0] * map_size[1]
         pbar.refresh()
 
-    output = wfc.render()
     repair(output)
     fill_tiles(output)
     save_output(output, filename=save_path)

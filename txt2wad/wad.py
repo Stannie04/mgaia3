@@ -1,6 +1,10 @@
 import struct
-from lump_entries import *
 import random
+
+try:
+    from .lump_entries import *
+except ImportError:
+    from lump_entries import *
 
 
 class WAD:
@@ -125,7 +129,7 @@ class WAD:
         ceiling_height = 128  # arbitrary
         # floor_tex = b"FLOOR1\0"  # 8 bytes, padded with zeros if necessary
         floor_tex = self.textures["floor"].encode("utf-8")
-        breakpoint()
+        # breakpoint()
         if len(floor_tex) < 8:
             floor_tex = floor_tex.ljust(8, b'\0')
         # ceiling_tex = b"CEIL1\0\0"

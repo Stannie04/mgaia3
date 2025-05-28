@@ -1,13 +1,13 @@
-from wad import WAD
-from wad_loader import main as load_wad
 import pickle
 
-def main():
-    input = "../data/test.txt"
-    output = "../data/test.wad"
+try:
+    from .wad import WAD
+    from .wad_loader import main as load_wad
+except ImportError:
+    from wad import WAD
+    from wad_loader import main as load_wad
 
-    texture_mix = "../txt2wad/all_map_textures.pkl"
-
+def main(input="../data/test.txt", output="../data/test.wad", texture_mix="../txt2wad/all_map_textures.pkl"):
     with open(texture_mix, "rb") as filehandle:
         texture_dict = pickle.load(filehandle)
 
