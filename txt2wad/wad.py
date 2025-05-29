@@ -52,7 +52,7 @@ class WAD:
             12: 2012  # fallback object (Medikit)
         }
 
-        self.walls = {1, 3, 13, 14, 15, 16}
+        self.walls = {1, 16}
         self.edges = set()
 
         self.grid = []
