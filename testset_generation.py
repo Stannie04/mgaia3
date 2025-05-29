@@ -35,11 +35,11 @@ if __name__ == "__main__":
         txt2wad(input=filepath, output=f"WFCGenerator/playtest/{os.path.splitext(file)[0]}.wad")
 
     # # Generating new maps for testing
-    os.makedirs("WFCGenerator/playtest", exist_ok=True)
+    # os.makedirs("WFCGenerator/playtest", exist_ok=True)
     for i in range(n_maps):
         generated_txt_map_path = f"WFCGenerator/generated_maps/generated_map_test_{i}.txt"
         generated_wad_map_path = f"WFCGenerator/playtest/generated_map_test_{i}.wad"
-        call_wfc(training_map_path=training_maps_folder, save_path=generated_txt_map_path, N=3, map_size=(120, 120))  # standard = (30,30)
+        # call_wfc(training_map_path=training_maps_folder, save_path=generated_txt_map_path, N=3, map_size=(120, 120))  # standard = (30,30)
         txt2wad(input=generated_txt_map_path, output=generated_wad_map_path)
 
     call_metrics(generated_maps_folder=generated_txt_map_folder, original_maps_folder=original_txt_map_folder)

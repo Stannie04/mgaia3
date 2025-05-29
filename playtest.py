@@ -5,7 +5,7 @@ from txt2wad.wad_loader import main as load_wad
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
 
 if __name__ == "__main__":
-    np.random.seed(0)
+    np.random.seed(42)
 
     # Eval paths
     playtest_wads = "WFCGenerator/playtest"
