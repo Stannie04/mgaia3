@@ -10,6 +10,7 @@ except ImportError:
 
 class WAD:
     def __init__(self, filename, scale, texture_palettes):
+        self.spawn_placed = False # Ignore subsequent spawn points (that exist due to multiplayer)
         self.lumps = {
             "MAP01": LumpBuilder(),
             "THINGS": LumpBuilder(),
@@ -197,6 +198,14 @@ class WAD:
             for x in range(width):
                 cell = self.grid[y][x]
                 if cell in self.thing_types:
+                    # If the cell is a spawn point (10), we only place it once.
+                    if cell == 10:
+                        if self.spawn_placed:
+                            self.grid[y][x] = 2  # Change to floor tile
+                            continue
+                        else:
+                            self.spawn_placed = True
+
                     # Place the thing at the center of the cell.
                     thing_x = int((x + 0.5) * self.scale)
                     thing_y = int((y + 0.5) * self.scale)
