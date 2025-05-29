@@ -183,7 +183,7 @@ if __name__ == "__main__":
     # Set default parameters
     N = 3
     MAX_MAP_SIZE = 150
-    map_size = (30, 30)   
+    map_size = (120, 120)   
     base_window_size = (1000, 1000)
 
     # Run with or without visualization
