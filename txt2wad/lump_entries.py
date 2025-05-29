@@ -132,11 +132,6 @@ class Sidedef:
         self.sector = sector
 
     def pack_data(self):
-        # Pack the texture names as 8-byte strings
-        # upper_texture_bytes = self.upper_texture.encode('ascii').ljust(8, b'\x00')
-        # lower_texture_bytes = self.lower_texture.encode('ascii').ljust(8, b'\x00')
-        # middle_texture_bytes = self.middle_texture.encode('ascii').ljust(8, b'\x00')
-
         return struct.pack("<hh8s8s8sh", self.x_offset, self.y_offset, self.upper_texture, self.lower_texture, self.middle_texture, self.sector)
 
 
@@ -163,8 +158,4 @@ class Sector:
         self.tag = tag
 
     def pack_data(self):
-        # Pack the texture names as 8-byte strings
-        # floor_texture_bytes = self.floor_texture.encode('ascii').ljust(8, b'\x00')
-        # ceiling_texture_bytes = self.ceiling_texture.encode('ascii').ljust(8, b'\x00')
-
         return struct.pack("<hh8s8shhh", self.floor_height, self.ceiling_height, self.floor_texture, self.ceiling_texture, self.light_level, self.special_type, self.tag)

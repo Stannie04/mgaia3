@@ -9,14 +9,10 @@ def main():
         map_dicts = {"Textures": [], "Flats": []}
         textures = True
         for line in filehandle.readlines():
-            # print(line)
 
             line = line.rstrip()
 
             if line.startswith("Level"):
-                # print(line)
-                # current_map = line.split(" ")[1]
-                # print(current_map)
                 if current_map != "":
                     all_dicts[current_map] = map_dicts
 
@@ -33,7 +29,6 @@ def main():
                     textures = False
             number = line.split(".")
             if number[0].isdigit():
-                # print(number)
                 if textures:
                     map_dicts["Textures"].append(number[1].lstrip())
                 else:
@@ -43,5 +38,5 @@ def main():
         pickle.dump(all_dicts, saveloc)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()

@@ -86,7 +86,7 @@ class WAD:
 
         floor_textures = random.choice(all_textures["Flats"])
         roof_textures = random.choice(all_textures["Flats"])
-        # exit_tex = "SW1STON1"
+
         regex = re.compile("SW1.*")
         switches = list(filter(regex.match, all_textures["Textures"]))
 
@@ -158,7 +158,6 @@ class WAD:
         tag = 0
         self.lumps["SECTORS"].add_entry(Sector(floor_height, ceiling_height, floor_tex, ceiling_tex, light, special, tag))
 
-
     def build_sidedefs(self):
         # First build sidedef 0 for the exit
         ex = self.textures["exit"].encode("utf-8")
@@ -166,7 +165,6 @@ class WAD:
 
         n_sidedefs = len(self.lumps["LINEDEFS"].entries)
 
-        # up, low, mid = b"NULL____", b"NULL____", b"NULL____"
         up, low, mid = self.textures["wall_up"].encode("utf-8"), self.textures["wall_low"].encode("utf-8"), self.textures["wall_mid"].encode("utf-8")
         for i in range(n_sidedefs):
             self.lumps["SIDEDEFS"].add_entry(Sidedef(0, 0, up, low, mid, 0))

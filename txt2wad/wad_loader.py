@@ -10,6 +10,7 @@ def get_action(keybinds):
             action = [a or b for a, b in zip(action, mapping)]
     return action
 
+
 def init_game(filename):
     game = vzd.DoomGame()
 
@@ -38,6 +39,7 @@ def init_game(filename):
     game.init()
 
     return game
+
 
 def run_episode(game, keybinds, screen):
     running = True
