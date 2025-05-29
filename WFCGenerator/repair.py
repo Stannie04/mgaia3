@@ -4,6 +4,7 @@ def repair(output, options=None):
     function names to booleans. If None, defaults to running all repairs.
     """
     if options is None:
+        # Default: apply all repair functions
         options = {
             'remove_small_rooms': True,
             'correct_edges': True,
@@ -12,6 +13,7 @@ def repair(output, options=None):
             'connect_rooms': True
         }
 
+    # Conditionally apply each enabled repair function
     if options.get('remove_small_rooms', False):
         remove_small_rooms(output)
     if options.get('correct_edges', False):
@@ -32,11 +34,15 @@ def correct_edges(output):
     if height == 0:
         return
     width = len(output[0])
+
+    # Check top and bottom rows
     for x in range(width):
         if output[0][x] == '.':
             output[0][x] = 'X'
         if output[height - 1][x] == '.':
             output[height - 1][x] = 'X'
+    
+    # Check left and right columns
     for y in range(height):
         if output[y][0] == '.':
             output[y][0] = 'X'
@@ -53,6 +59,8 @@ def prune_isolated_walls(output):
         return
     width = len(output[0])
     to_prune = []
+
+    # Identify wall tiles with no adjacent floor tiles
     for y in range(height):
         for x in range(width):
             if output[y][x] != 'X':
@@ -69,6 +77,7 @@ def prune_isolated_walls(output):
             if not any(tile == '.' for tile in neighbors):
                 to_prune.append((y, x))
 
+    # Replace isolated wall tiles with out-of-bounds
     for (y, x) in to_prune:
         output[y][x] = '-'
 
@@ -88,6 +97,8 @@ def connect_rooms(output, corridor_width=2):
     width = len(output[0])
     visited = set()
     rooms = []
+
+    # Find all connected components (rooms)
     for y in range(height):
         for x in range(width):
             if output[y][x] == '.' and (y, x) not in visited:
@@ -104,9 +115,12 @@ def connect_rooms(output, corridor_width=2):
                             stack.append((ny, nx))
                 rooms.append(comp)
 
+    # No connection needed if already one component
     n = len(rooms)
     if n <= 1:
         return
+    
+    # Build list of closest room-to-room distances
     edges = []
     for i in range(n):
         for j in range(i + 1, n):
@@ -120,9 +134,11 @@ def connect_rooms(output, corridor_width=2):
                         best = (y1, x1, y2, x2)
             edges.append((min_dist, i, j) + best)
 
+    # Sort all possible room connections by distance
     edges.sort(key=lambda e: e[0])
     parent = list(range(n))
 
+    # Disjoint-set union-find structure
     def find(a):
         while parent[a] != a:
             parent[a] = parent[parent[a]]
@@ -134,12 +150,14 @@ def connect_rooms(output, corridor_width=2):
         parent[rb] = ra
 
     connections = 0
+    # Connect rooms using MST (Kruskal's algorithm)
     for _, i, j, y1, x1, y2, x2 in edges:
         if find(i) != find(j):
             union(i, j)
             connections += 1
             new_floor = []
 
+            # Carve horizontal corridor
             for xx in range(min(x1, x2), max(x1, x2) + 1):
                 for dy in range(corridor_width):
                     yy = y1 + dy
@@ -147,6 +165,7 @@ def connect_rooms(output, corridor_width=2):
                         output[yy][xx] = '.'
                         new_floor.append((yy, xx))
 
+            # Carve vertical corridor
             for yy in range(min(y1, y2), max(y1, y2) + 1):
                 for dx in range(corridor_width):
                     xx = x2 + dx
@@ -154,6 +173,7 @@ def connect_rooms(output, corridor_width=2):
                         output[yy][xx] = '.'
                         new_floor.append((yy, xx))
 
+            # Seal corridor edges with walls if adjacent to void
             for py, px in new_floor:
                 for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
                     ny, nx = py + dy, px + dx
@@ -171,9 +191,10 @@ def seal_against_bounds(output):
     height = len(output)
     if height == 0:
         return
-    
     width = len(output[0])
     to_convert = []
+
+    # Find floor tiles next to out-of-bounds
     for y in range(height):
         for x in range(width):
             if output[y][x] == '.':
@@ -183,7 +204,8 @@ def seal_against_bounds(output):
                         if output[ny][nx] == '-':
                             to_convert.append((y, x))
                             break
-
+    
+    # Convert them to wall tiles
     for y, x in to_convert:
         output[y][x] = 'X'
 
@@ -196,9 +218,10 @@ def remove_small_rooms(output, min_size=12):
     height = len(output)
     if height == 0:
         return
-    
     width = len(output[0])
     visited = set()
+
+    # Find each floor region and check its size
     for y in range(height):
         for x in range(width):
             if output[y][x] == '.' and (y, x) not in visited:
@@ -216,6 +239,7 @@ def remove_small_rooms(output, min_size=12):
                             visited.add((ny, nx))
                             stack.append((ny, nx))
 
+                # Replace small regions with wall tiles
                 if len(comp) < min_size:
                     for ry, rx in comp:
                         output[ry][rx] = 'X'
