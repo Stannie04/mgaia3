@@ -2,36 +2,39 @@ from collections import deque
 import random
 
 def fill_tiles(output):
-    height, width = len(output), len(output[0])
-    walkable_tiles = [(y, x) for y in range(height) for x in range(width) if output[y][x] == '.']
+    """	
+    Fill the output grid with various items like enemies, weapons, ammo, health packs, explosives, and decoration using random placement.
+    """ 
+    height, width = len(output), len(output[0]) # Get the height and width of the output grid
+    walkable_tiles = [(y, x) for y in range(height) for x in range(width) if output[y][x] == '.'] # Get all walkable tiles ('.')
 
     # Place start and exit markers
     place_start_and_exit(output, walkable_tiles, height, width)
-    # print("Walkable tiles", len(walkable_tiles))
+
     # Place enemies
     num_enemies = int(len(walkable_tiles) * 0.03)
     walkable_tiles = random_placement(output, walkable_tiles, height, width, num_enemies, 'E')
-    # print("Walkable tiles", len(walkable_tiles))
+
     # Place weapons
     num_weapons = random.randint(1, 5)
     walkable_tiles = random_placement(output, walkable_tiles, height, width, num_weapons, 'W')
-    # print("Walkable tiles", len(walkable_tiles))
+
     # Place ammo 
     num_ammo = int(len(walkable_tiles) * 0.01)
     walkable_tiles = random_placement(output, walkable_tiles, height, width, num_ammo, 'A')
-    # print("Walkable tiles", len(walkable_tiles))
+
     # Place health packs
     num_health = int(len(walkable_tiles) * 0.03)
     walkable_tiles = random_placement(output, walkable_tiles, height, width, num_health, 'H')
-    # print("Walkable tiles", len(walkable_tiles))
+
     # Place explosives
     num_explosives = random.randint(0, 10)
     walkable_tiles = random_placement(output, walkable_tiles, height, width, num_explosives, 'B')
-    # print("Walkable tiles", len(walkable_tiles))
+
     # Place decoration
     num_decoration = int(len(walkable_tiles) * 0.01)
     walkable_tiles = random_placement(output, walkable_tiles, height, width, num_decoration, ':')
-    # print("Walkable tiles", len(walkable_tiles))
+
 
 
 def find_furthest_walkable_pair(output, walkable, height, width):
@@ -41,13 +44,14 @@ def find_furthest_walkable_pair(output, walkable, height, width):
     """
     max_pair = None
     max_dist = -1
-    
+     
+    # Iterate through each walkable tile and calculate distances to all other walkable tiles
     for i, (sy, sx) in enumerate(walkable):
         dist_map = [[-1]*width for _ in range(height)]
         dist_map[sy][sx] = 0
         queue = deque([(sy, sx)])
          
-        # BFS to find the furthest tile from (sy, sx) 
+        # Find the furthest tile from (sy, sx)
         while queue:
             y, x = queue.popleft()
             for dy, dx in [(-1,0), (1,0), (0,-1), (0,1)]:
@@ -55,7 +59,6 @@ def find_furthest_walkable_pair(output, walkable, height, width):
                 if 0 <= ny < height and 0 <= nx < width and output[ny][nx] == '.' and dist_map[ny][nx] == -1:
                     dist_map[ny][nx] = dist_map[y][x] + 1
                     queue.append((ny, nx))
-        # Find the furthest tile from (sy, sx)
         for ey, ex in walkable[i+1:]:
             d = dist_map[ey][ex]
             if d > max_dist:
@@ -71,9 +74,8 @@ def place_start_and_exit(output, walkable_tiles, height, width):
     The start marker is placed at the furthest walkable tile from the exit marker.
     """
 
-    result = find_furthest_walkable_pair(output, walkable_tiles, height, width)
-    if result:
-        (y1, x1), (y2, x2), _ = result
+    result = find_furthest_walkable_pair(output, walkable_tiles, height, width) # Find the two furthest walkable tiles
+    (y1, x1), (y2, x2), _ = result
     output[y1][x1] = '<'
 
     # Find a wall tile adjacent to (y2, x2)
