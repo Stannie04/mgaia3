@@ -1,21 +1,5 @@
 import vizdoom as vzd
-import os
-from vizdoom import gymnasium_wrapper
-import gymnasium
-import time
 import pygame
-
-
-# env = gymnasium.make("VizdoomCorridor", render_mode="human")
-# print(env.action_space)
-# observation, info = env.reset()
-# for _ in range(1000):
-#    observation, reward, terminated, truncated, info = env.step(env.action_space.sample())
-#
-#    if terminated or truncated:
-#       observation, info = env.reset()
-#
-# env.close()
 
 
 def get_action(keybinds):
@@ -32,7 +16,7 @@ def init_game(filename):
     # game.set_doom_game_path("data/doom.wad")
     # game.set_doom_scenario_path("data/E1M1.wad")
     game.set_doom_scenario_path(filename)
-    game.set_screen_resolution(vzd.ScreenResolution.RES_640X480)
+    game.set_screen_resolution(vzd.ScreenResolution.RES_1024X768)
     game.set_screen_format(vzd.ScreenFormat.RGB24)
     game.set_render_hud(True)
     game.set_render_crosshair(True)
@@ -64,7 +48,8 @@ def run_episode(game, keybinds, screen):
                 running = False
 
         game.make_action(get_action(keybinds))
-
+        if game.is_episode_finished():
+            break
         frame = game.get_state().screen_buffer
         surface = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
         screen.blit(surface, (0, 0))
@@ -84,13 +69,10 @@ def main(filename):
         pygame.K_e: [0, 0, 0, 0, 0, 0, 0, 1],  # USE
     }
     pygame.init()
-    screen = pygame.display.set_mode((640, 480))
+    screen = pygame.display.set_mode((1024, 768))
     game = init_game(filename)
 
     run_episode(game, keybinds, screen)
     game.close()
     pygame.quit()
 
-
-if __name__=="__main__":
-    main()
