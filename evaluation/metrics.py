@@ -8,17 +8,17 @@ ITEMS = ["A", "K", "t", "B", "H"]
 ENEMIES = ["E"]
 AMMUNITION = ["A"]
 HEALTHS = ["H"]
-MININUM_HEALTH_PACKS =0.8
+MINNINUM_HEALTH_PACKS =0.8
 
 WALKABLES = [".", ",", ":", "T", "t", "<", ">", "+", "L"]
-# # Add otehr arrays to walbles  since thee are still walkabel tiles
+# # Add other arrays to walkables  since thee are still walkable tiles
 WALKABLES_EXTEND = WALKABLES.copy()
 WALKABLES_EXTEND.extend(ITEMS)
 WALKABLES_EXTEND.extend(ENEMIES)
 WALKABLES_EXTEND.extend(HEALTHS)
 
 
-#Game modes Ammunition distribution
+#Game modes  based  Ammunition distribution
 EASY = 3.0
 NORMAL = 2.2
 HARD = 1.7
@@ -50,9 +50,15 @@ def txt2image(data):
     return data
 
 def rotate(square, angle):
+    """
+       Rotate th position of the squares by 90 degrees.
+    """
     return np.rot90(square, angle)
 
 def flip(square):
+    """
+       Flip the square.
+    """
     return np.flip(square)
 
 def pixel_entropy(img):  
@@ -118,27 +124,27 @@ def count_corners(img):
     return corners/count_floor(img)  # normalise
 
 def item_distribution(img):
-    # Calculate
+    """
+       Normalise the item distribution and their relations.
+    """
     img = np.array(img)
-    # calculate_relation
+    # Calculate the distributions between interesting  objectives
     relation = count_items(img)
     relation_E = count_enemies(img)
     relation_EF= count_enemies_to_floor(img)
     relation_HE = count_health_to_enemy(img)
-    healthpack_mode = relation_HE > MININUM_HEALTH_PACKS
-    relation_AE = count_ammu_to_enemy(img)
+    healthpack_mode = relation_HE > MINNINUM_HEALTH_PACKS # Check if there is a nice distribution of health packs
+    relation_AE = count_ammo_to_enemy(img)
     game_mode = classify_difficulty(img)
 
-    # f"M^2 %s \n items %s", m_sq, objectives,
     print(
-            f"Enemies to m²: {relation_EF}%\n"
+            f"Enemies to m²: {relation_EF}\n"
             f"Enemies in a Map: {relation_E}\n"
             f"Healths in relation to enemies: {relation_HE}\n"
             f"Enough health packs: {healthpack_mode}\n"
             
             f"Ammunition in relation to enemies: {relation_AE}\n"
             f"Game Mode recommended: {game_mode}\n"
-            # f"keys: {relation_p}, {doors}"%\n"
             f"Items per m²: {relation}\n")
     return relation_EF, relation_E, relation_HE, relation, relation_AE, game_mode
 
@@ -168,7 +174,7 @@ def count_enemies_to_floor(img):
 
 def count_enemies(img):
     """
-    Count the  amount of enemies in a  map
+    Count the amount of enemies in a map
     """
     enemy_mask =  np.isin(img, ENEMIES)
     enemy_tile = np.sum(enemy_mask)
@@ -177,21 +183,27 @@ def count_enemies(img):
 
 def count_health_to_enemy(img):
     """
-    Normalise the number of hearts by the number of floor tiles.
+    Normalise the number of hearts by the number of enemies in a map.
     """
     health_mask= np.isin(img, HEALTHS)
     health_tile = np.sum(health_mask)
     relation_HE = health_tile/count_enemies(img)
     return relation_HE
 
-def count_ammu_to_enemy(img):
-    ammu_mask = np.isin(img,AMMUNITION)
-    ammu_tile = np.sum(ammu_mask)
-    relation_AE = ammu_tile/count_enemies(img)
+def count_ammo_to_enemy(img):
+    """
+       Normalise the number of ammunition spawns by the number of enemies.
+    """
+    ammo_mask = np.isin(img,AMMUNITION)
+    ammo_tile = np.sum(ammo_mask)
+    relation_AE = ammo_tile/count_enemies(img)
     return relation_AE
 
 def classify_difficulty(img):
-    distribution = count_ammu_to_enemy(img)
+    """
+       Based on the ammo distribution selected a recommended  difficulty.
+    """
+    distribution = count_ammo_to_enemy(img)
     game_mode = "Tutorial"
     for name, mode in DIFFICULTIES:
         if distribution <= mode:
@@ -201,9 +213,11 @@ def classify_difficulty(img):
     return game_mode
 
 def call_metrics(generated_maps_folder, original_maps_folder):
-
+    """
+         Run metrics on the generated maps and compare with original maps.
+    """
     n_metrics = 6  # number of metrics
-    # Generated and 
+    # Generated and original files
     gen_files = os.listdir(generated_maps_folder)
     orig_files = os.listdir(original_maps_folder)
     paths = [generated_maps_folder, original_maps_folder]
@@ -215,7 +229,6 @@ def call_metrics(generated_maps_folder, original_maps_folder):
             file_path = os.path.join(paths[d], file)
 
             img_txt = process_txt(file_path)
-            img = txt2image(img_txt)
 
             corners_gen = count_corners(img_txt)  # compute number of corners
             gen_metrics[d, i, 0] = corners_gen
@@ -260,45 +273,5 @@ def call_metrics(generated_maps_folder, original_maps_folder):
     return entropy_metric, corners_metric, enemies_metric, health_metric, item_metric, ammo_metric
 
 if __name__ == "__main__":
-
-    # test whether entropy of image is computed
-    img_txt = process_txt("../WFCGenerator/generated_maps/generated_map.txt")
-    img = txt2image(img_txt)
-    img_orig_txt = process_txt("../WFCGenerator/training_map/E2M2.txt")
-    img_orig = txt2image(img_orig_txt)
-
-    entropy = pixel_entropy(img)
-    print(f"Entropy of generated_map.txt = {entropy}")
-
-    # test finding entropy metric of all txt files
-    H_gen = categorical_entropy("../WFCGenerator/generated_maps")  # generated maps
-    H_orig = categorical_entropy("../WFCGenerator/training_maps_old")  # existing maps
-
-    entropy_metric = abs(H_gen - H_orig)
-    print(f"Delta Entropy metric = {entropy_metric}")
-
-    corners_gen = count_corners(img_txt)
-    corners_orig = count_corners(img_orig_txt)
-
-    print("Corners per m² Generated map: ", corners_gen)
-    print("Corners per m² Original map: ", corners_orig)
-
-    print("Item distribution over maps")
-    print("Generated map")
-    relation_EF_GEN, relation_E_GEN, relation_HE_GEN, relation_GEN, relation_AE_GEN, _ = item_distribution(img_txt)
-    #DOes not have items so  shoudl  be 0 and nan alike
-    print("Original Map")
-    relation_EF_ORG, relation_E_ORG, relation_HE_ORG, relation_ORG, relation_AE_ORG, _ = item_distribution(img_orig_txt)
-    # SHould have items
-    #Diffreence
-    print("Differences \n "
-          f"Enemies per m²:{abs(relation_EF_ORG - relation_EF_GEN)}\n",
-          f"Enemies per map: {abs(relation_E_ORG - relation_E_GEN)}\n",
-          f"Ammunition to Enemy:{abs(relation_AE_ORG - relation_AE_GEN)}\n"
-          f"Heal per enemy:{abs(relation_HE_ORG - relation_HE_GEN)}\n",
-          f"Items over m²:{abs(relation_ORG - relation_GEN)}\n",
-          )
-
-
-    call_metrics("C:/Users/alhst/Documents/AI Master/Modern Game AI Algorithms/A3_DOOM/mgaia3/WFCGenerator/generated_maps",
-                 "C:/Users/alhst/Documents/AI Master/Modern Game AI Algorithms/A3_DOOM/mgaia3/WFCGenerator/test_map")
+    call_metrics(r"../WFCGenerator/generated_maps",
+                 r"../WFCGenerator/test_map")
