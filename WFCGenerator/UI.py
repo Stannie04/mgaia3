@@ -3,7 +3,8 @@ import pygame
 class UI:
     def __init__(self, screen, grid_width, grid_height, cell_size, legend_width, map_size, N, MAX_MAP_SIZE):
         """
-        Initialize UI with screen, dimensions, and default states.
+        Initialize UI with screen surface, layout settings, font styles, 
+        button/input box positions, and repair option toggles.
         """
         self.screen = screen
         self.grid_width = grid_width
@@ -12,11 +13,14 @@ class UI:
         self.legend_width = legend_width
         self.MAX_MAP_SIZE = MAX_MAP_SIZE
 
+        # Text input fields for width, height, and N
         self.texts = {
             'width': str(min(map_size[0], MAX_MAP_SIZE)),
             'height': str(min(map_size[1], MAX_MAP_SIZE)),
             'N': str(N)
         }
+
+        # Input focus and blinking cursor control (generating...)
         self.active_input = None
         self.cursor_visible = True
         self.cursor_timer = 0
@@ -30,10 +34,12 @@ class UI:
         self.repaired = False
         self.filled = False
 
+        # Font styles
         self.font = pygame.font.SysFont('Arial', 18, bold=True)
         self.label_font = pygame.font.SysFont('Arial', 18)
         self.option_font = pygame.font.SysFont('Arial', 14)
 
+        # Dots for loading animation while generating
         self.dot_states = ['.', '..', '...']
         self.dot_index = 0
         self.dot_timer = 0
@@ -85,19 +91,24 @@ class UI:
             ("prune_isolated_walls","Prune isolated walls"),
             ("connect_rooms",       "Connect rooms")
         ]
-
         self.repair_options = {key: True for key, _ in self.repair_functions}
+
+        # Position each checkbox for repair options dropdown
         checkbox_start_y = y_options + bh + spacing
         self.checkbox_rects = {}
         for i, (key, _) in enumerate(self.repair_functions):
             rect = pygame.Rect(bx + 10, checkbox_start_y + i * (small_h), 20, 20)
             self.checkbox_rects[key] = rect
 
-        self.show_options = False
+        self.show_options = False # Toggle for showing the repair options dropdown
+
 
     def handle_event(self, event):
         """
-        Handle mouse and keyboard events for inputs, buttons, and checkboxes.
+        Handle mouse and keyboard input:
+        - Text input fields
+        - Button presses
+        - Repair option toggles
         """
         make = save = repair = fill = False
 
@@ -156,6 +167,7 @@ class UI:
 
         return make, save, repair, fill
 
+
     def update(self, dt, generating):
         """
         Update blinking cursor and loading indicator.
@@ -163,19 +175,25 @@ class UI:
         self.generating = generating
         self.dot_timer += dt
         self.cursor_timer += dt
-
+        	
+        # Animate the "Generating..." dots
         if generating and self.dot_timer >= self.dot_interval:
             self.dot_timer = 0
             self.dot_index = (self.dot_index + 1) % len(self.dot_states)
+        
+        # Toggle cursor visibility
         if self.cursor_timer >= self.cursor_switch_ms:
             self.cursor_timer = 0
             self.cursor_visible = not self.cursor_visible
 
+
     def draw(self, output, colors, generating):
         """
-        Render grid, legend background, inputs, buttons, dropdown, and status text.
+        Render everything: map grid, UI sidebar, inputs, buttons, repair options,
+        and map legend/status message.
         """
         self.screen.fill((255, 71, 76))
+
         # Draw grid
         for y, row in enumerate(output):
             for x, tile in enumerate(row):
@@ -184,12 +202,14 @@ class UI:
                     colors.get(tile, (255, 0, 0)),
                     (x * self.cell_size, y * self.cell_size, self.cell_size, self.cell_size)
                 )
+                
         # Draw sidebar background
         pygame.draw.rect(
             self.screen,
             (100, 100, 100),
             (self.grid_width, 0, self.legend_width, self.grid_height)
         )
+
         # Draw inputs
         for key, rect in self.input_boxes.items():
             pygame.draw.rect(self.screen, (70, 70, 70), rect)
@@ -200,6 +220,7 @@ class UI:
             self.screen.blit(self.font.render(txt, True, (255, 255, 255)), (rect.x + 5, rect.y + offset_y))
             label_map = {'width': 'Width:', 'height': 'Height:', 'N': 'Pattern Size (N):'}
             self.screen.blit(self.label_font.render(label_map[key], True, (255, 255, 255)), (rect.x, rect.y - 20))
+
         # Draw buttons
         for key, rect in self.buttons.items():
             disabled = False
@@ -213,6 +234,7 @@ class UI:
             label_texts = {'options':'Repair Options','repair':'Repair','fill':'Fill Tiles','make':'Make New Map','save':'Save Map'}
             surf = self.font.render(label_texts[key], True, (255, 255, 255))
             self.screen.blit(surf, surf.get_rect(center=rect.center))
+
         # Draw repair options if toggled
         if self.show_options:
             options_rect = pygame.Rect(
@@ -236,6 +258,7 @@ class UI:
                     self.option_font.render(label_text, True, (255, 255, 255)),
                     (rect.x + rect.width + 5, rect.y + 2)
                 )
+
         # Draw legend/status
         legend = [
             ("White: Walkable", (255, 255, 255)),
@@ -253,12 +276,15 @@ class UI:
             (('Generating'+self.dot_states[self.dot_index]) if generating else 'Finished wfc',
              (255, 0, 0) if generating else (0, 255, 0))
         ]
+
         for i, (text, color) in enumerate(legend):
             self.screen.blit(
                 self.font.render(text, True, color),
                 (self.grid_width + 10, 10 + i * int(self.font.get_linesize() * 1.1))
             )
+
         pygame.display.update()
+
 
     def get_N_value(self):
         """
@@ -269,6 +295,7 @@ class UI:
         except ValueError:
             return None
 
+
     def get_width_value(self):
         """
         Return the integer width from input capped at MAX_MAP_SIZE or None if invalid.
@@ -277,6 +304,7 @@ class UI:
             return min(int(self.texts['width']), self.MAX_MAP_SIZE)
         except ValueError:
             return None
+
 
     def get_height_value(self):
         """

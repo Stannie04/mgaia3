@@ -8,12 +8,9 @@ def load_map(filename):
     Load a single map from a text file, print and save the raw and sanitized versions.
     """
     print(f"\nLoading map from: {filename}")
+
     with open(filename, "r") as f:
         raw_lines = [line.rstrip("\n") for line in f]
-
-    # print("Raw map:")
-    # for line in raw_lines:
-    #     print(line)
 
     # raw_map = [list(line) for line in raw_lines]
     # save_training_map_as_image(raw_map, "visualize_training_maps/raw_map.png")
@@ -22,10 +19,6 @@ def load_map(filename):
         [c if c in ['-', '.', 'X'] else '.' for c in line]
         for line in raw_lines
     ]
-
-    # print("\nSanitized map:")
-    # for row in map_data:
-    #     print("".join(row))
 
     # save_training_map_as_image(map_data, "visualize_training_maps/sanitized_map.png")
 
@@ -39,6 +32,7 @@ def load_all_maps(folder_path):
     line into valid tiles, and return a list of map grids.
     """
     print(f"\nLoading all maps from: {folder_path}")
+
     maps = []
     file_count = 0
     for filename in os.listdir(folder_path):
@@ -52,8 +46,8 @@ def load_all_maps(folder_path):
                 if lines:
                     maps.append(lines)
                     file_count += 1
-    print(f"Loaded {file_count} maps\n")
 
+    print(f"Loaded {file_count} maps\n")
     return maps
 
 
@@ -89,9 +83,11 @@ def save_output(output, filename="generated_maps/generated_map.txt"):
     Write the generated map grid to a text file, one row per line.
     """
     print(f"Saving generated map to: {filename}")
+
     with open(filename, "w") as f:
         for row in output:
             f.write("".join(row) + "\n")
+
     print(f"Map saved successfully, dimensions: {len(output[0])}x{len(output)}\n")
 
 
@@ -101,6 +97,7 @@ def extract_patterns(maps, N):
     over every possible position and return them as tuples.
     """
     print(f"Extracting {N}x{N} patterns")
+
     patterns = []
     pattern_count = 0
     for map_data in maps:
@@ -113,8 +110,8 @@ def extract_patterns(maps, N):
                 )
                 patterns.append(pattern)
                 pattern_count += 1
-    print(f"Extracted {pattern_count} total {N}x{N} patterns")
 
+    print(f"Extracted {pattern_count} total {N}x{N} patterns")
     return patterns
 
 
@@ -124,13 +121,14 @@ def build_pattern_catalog(patterns):
     weights based on their frequency in the training set.
     """
     print("Building pattern catalog")
+
     counter = Counter(patterns)
     catalog = list(counter.keys())
     weights = [counter[p] for p in catalog]
+
     print(f"Catalog contains {len(catalog)} unique patterns")
     print(f"Most common pattern appears {max(weights)} times")
     print(f"Least common pattern appears {min(weights)} times")
-
     return catalog, weights
 
 
@@ -176,6 +174,7 @@ def build_adjacency_rules(catalog, tile_adj=None):
     tiles respect training tile adjacency, allow that transition.
     """
     print("Building adjacency rules")
+
     adjacency = defaultdict(lambda: [set() for _ in range(4)])
     total_rules = 0
     for i, a in enumerate(tqdm(catalog, desc="Processing patterns")):
@@ -191,7 +190,7 @@ def build_adjacency_rules(catalog, tile_adj=None):
                         continue
                 adjacency[i][direction].add(j)
                 total_rules += 1
+
     print(f"Generated {total_rules} adjacency rules for {len(catalog)} patterns")
     print(f"Average rules per pattern: {total_rules / len(catalog):.1f}\n")
-
     return adjacency
